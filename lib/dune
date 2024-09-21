@@ -1,2 +1,3 @@
 (library
- (name mimosa))
+ (name mimosa)
+ (libraries fmt))
