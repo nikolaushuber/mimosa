@@ -2,9 +2,9 @@
 opam-version: "2.0"
 synopsis: "A short synopsis"
 description: "A longer description"
-maintainer: ["Maintainer Name"]
-authors: ["Author Name"]
-license: "LICENSE"
+maintainer: ["Nikolaus Huber"]
+authors: ["Nikolaus Huber"]
+license: "MIT"
 tags: ["topics" "to describe" "your" "project"]
 homepage: "https://github.com/username/reponame"
 doc: "https://url/to/documentation"
@@ -12,6 +12,8 @@ bug-reports: "https://github.com/username/reponame/issues"
 depends: [
   "ocaml"
   "dune" {>= "3.16"}
+  "sexplib"
+  "menhir"
   "odoc" {with-doc}
 ]
 build: [

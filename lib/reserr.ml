@@ -46,7 +46,11 @@ let sequence r =
   aux r
 
 let of_option ~default = Option.fold ~none:(error default) ~some:ok
-let to_option = function Ok x, _ -> Some x | _ -> None
+
+let to_option = function
+  | Ok x, _ -> Some x
+  | _ -> None
+
 let map f l = List.map f l |> sequence
 let concat_map f l = fmap List.concat (map f l)
 
@@ -56,5 +60,7 @@ let pp quiet pp_ok ppf =
   | Ok x, w -> (
       pp_ok ppf x;
       if not quiet then
-        match w with [] -> () | ws -> pf stderr "%a@." (list Warning.pp) ws)
+        match w with
+        | [] -> ()
+        | ws -> pf stderr "%a@." (list Warning.pp) ws)
   | Error es, w -> pf stderr "%a@;%a@." (list Error.pp) es (list Warning.pp) w

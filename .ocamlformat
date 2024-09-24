@@ -1,0 +1,5 @@
+version = 0.26.2
+parse-docstrings = true
+break-infix = fit-or-vertical
+break-cases = toplevel
+module-item-spacing = compact

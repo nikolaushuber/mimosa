@@ -1,4 +1,5 @@
 (lang dune 3.16)
+(using menhir 2.0)
 
 (name mimosa)
 
@@ -7,11 +8,11 @@
 (source
  (github username/reponame))
 
-(authors "Author Name")
+(authors "Nikolaus Huber")
 
-(maintainers "Maintainer Name")
+(maintainers "Nikolaus Huber")
 
-(license LICENSE)
+(license MIT)
 
 (documentation https://url/to/documentation)
 
@@ -19,7 +20,11 @@
  (name mimosa)
  (synopsis "A short synopsis")
  (description "A longer description")
- (depends ocaml dune)
+ (depends
+  ocaml
+  dune
+  sexplib
+  menhir)
  (tags
   (topics "to describe" your project)))
 

@@ -1,3 +1,8 @@
 (library
  (name mimosa)
- (libraries fmt))
+ (libraries fmt compiler-libs.common sexplib))
+
+(ocamllex lexer)
+
+(menhir
+ (modules parser))
