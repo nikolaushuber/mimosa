@@ -1,6 +1,8 @@
 (library
  (name mimosa)
- (libraries fmt compiler-libs.common sexplib))
+ (libraries fmt compiler-libs.common cmdliner pp_loc)
+ (preprocess
+  (pps ppx_sexp_conv)))
 
 (ocamllex lexer)
 

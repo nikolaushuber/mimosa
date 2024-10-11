@@ -54,6 +54,12 @@ let to_option = function
 let map f l = List.map f l |> sequence
 let concat_map f l = fmap List.concat (map f l)
 
+let rec fold_left f acc = function
+  | [] -> ok acc
+  | x :: xs ->
+      let* acc = f acc x in
+      fold_left f acc xs
+
 let pp quiet pp_ok ppf =
   let open Fmt in
   function

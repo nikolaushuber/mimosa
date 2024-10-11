@@ -1,2 +1,14 @@
-(test
- (name test_mimosa))
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stderr-to
+   redefine_step_errors
+   (run mimosa check %{dep:redefine_step.mim}))))
+
+(rule
+ (alias runtest)
+ (package mimosa)
+ (action
+  (progn
+   (diff redefine_step_errors.expected redefine_step_errors))))

@@ -12,6 +12,7 @@ val sequence : 'a t list -> 'a list t
 (** [sequence rs] returns [ok] of the list of ['a] iff there is no [error] in
     [rs] *)
 
+val fold_left : ('a -> 'b -> 'a t) -> 'a -> 'b list -> 'a t
 val of_option : default:Error.t -> 'a option -> 'a t
 val to_option : 'a t -> 'a option
 val map : ('a -> 'b t) -> 'a list -> 'b list t
@@ -20,4 +21,6 @@ val fmap : ('a -> 'b) -> 'a t -> 'b t
 val ( <$> ) : ('a -> 'b) -> 'a t -> 'b t
 val amap : ('a -> 'b) t -> 'a t -> 'b t
 val ( <*> ) : ('a -> 'b) t -> 'a t -> 'b t
-val pp : bool -> 'a Fmt.t -> 'a t Fmt.t
+
+val pp :
+  bool -> (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a t -> unit

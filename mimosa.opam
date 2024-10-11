@@ -12,8 +12,10 @@ bug-reports: "https://github.com/username/reponame/issues"
 depends: [
   "ocaml"
   "dune" {>= "3.16"}
-  "sexplib"
   "menhir"
+  "cmdliner"
+  "fmt"
+  "pp_loc"
   "odoc" {with-doc}
 ]
 build: [

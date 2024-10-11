@@ -23,8 +23,10 @@
  (depends
   ocaml
   dune
-  sexplib
-  menhir)
+  menhir
+  cmdliner
+  fmt
+  pp_loc)
  (tags
   (topics "to describe" your project)))
 

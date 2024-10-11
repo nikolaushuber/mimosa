@@ -1,4 +1,4 @@
 (executable
  (public_name mimosa)
  (name main)
- (libraries mimosa))
+ (libraries mimosa cmdliner))

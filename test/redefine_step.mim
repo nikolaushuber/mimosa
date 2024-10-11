@@ -1,0 +1,9 @@
+step add (a, b) = c
+{
+    c = a + b;
+}
+
+step add (d, e) = f
+{
+    f = d + e;
+}
