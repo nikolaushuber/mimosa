@@ -1,0 +1,4 @@
+File "unused_input.mim", line 1, characters 14-15
+1 | step test (a, b) = c
+                  ^
+Error: Input symbol b unused

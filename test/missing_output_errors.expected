@@ -1,0 +1,4 @@
+File "missing_output.mim", line 1, characters 18-19
+1 | step test a = (b, c)
+                      ^
+Error: No equation found for output symbol c

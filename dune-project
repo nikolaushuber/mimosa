@@ -26,7 +26,8 @@
   menhir
   cmdliner
   fmt
-  pp_loc)
+  pp_loc
+  tsort)
  (tags
   (topics "to describe" your project)))
 

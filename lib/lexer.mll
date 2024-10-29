@@ -1,6 +1,6 @@
 {
     open Parser
-    exception LexError of Error.t
+    exception LexError of Reserr.err
 }
 
 let space = [' ' '\t' '\r']

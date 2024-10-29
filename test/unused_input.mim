@@ -1,0 +1,4 @@
+step test (a, b) = c
+{
+    c = a;
+}

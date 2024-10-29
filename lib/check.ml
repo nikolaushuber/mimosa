@@ -8,7 +8,8 @@ let main files =
     (fun _ _ -> ())
     Fmt.stdout
     (let* ptrees = map Parse.f files in
-     map Check_parsetree.check ptrees)
+     let* _ = map Check_parsetree.check ptrees in
+     map Eq_ordering.f ptrees)
 
 let term = Term.(const main $ files)
 let info = Cmd.info "check" ~doc:"Check a given set of files."

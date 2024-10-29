@@ -1,4 +1,6 @@
-type 'a t = ('a, Error.t list) result * Warning.t list
+type err = Error.t * Location.t
+type warning = Warning.t * Location.t
+type 'a t = ('a, err list) result * warning list
 
 let ok x = (Result.ok x, [])
 let error x = (Result.error [ x ], [])
@@ -60,6 +62,23 @@ let rec fold_left f acc = function
       let* acc = f acc x in
       fold_left f acc xs
 
+let pp_loc ppf loc =
+  let file = loc.Location.loc_start.pos_fname in
+  let input = Pp_loc.Input.file file in
+  Pp_loc.pp ppf ~max_lines:10 ~input
+    [
+      ( Pp_loc.Position.of_lexing loc.loc_start,
+        Pp_loc.Position.of_lexing loc.loc_end );
+    ]
+
+let pp_err ppf (err, loc) =
+  let open Fmt in
+  pf ppf "%a@\n%a@[%a: %a@]"
+    (styled `Bold Location.print_loc)
+    loc pp_loc loc (styled `Bold string) "Error" Error.pp err
+
+let pp_warn _ _ = ()
+
 let pp quiet pp_ok ppf =
   let open Fmt in
   function
@@ -68,5 +87,5 @@ let pp quiet pp_ok ppf =
       if not quiet then
         match w with
         | [] -> ()
-        | ws -> pf stderr "%a@." (list Warning.pp) ws)
-  | Error es, w -> pf stderr "%a@;%a@." (list Error.pp) es (list Warning.pp) w
+        | ws -> pf stderr "%a" (list Warning.pp) ws)
+  | Error es, w -> pf stderr "%a@;%a" (list pp_err) es (list pp_warn) w

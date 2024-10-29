@@ -1,5 +1,5 @@
 %{
-    open Parsetree_builder
+    open Ptree_builder
 
     let package_of_loc pos =
         pos.Lexing.pos_fname
@@ -95,7 +95,7 @@
 %right PREC_UNARY_MINUS "?"
 %nonassoc "Some"
 
-%start <Parsetree.t> parse
+%start <Ptree.t> parse
 %%
 
 located_lower_string:
@@ -189,19 +189,19 @@ expr:
 
     (* Unary operations *)
     | "not" e = expr %prec PREC_UNARY_NOT {
-        let op = unop ~loc:(to_loc $loc($1)) Parsetree.Punop_not in
+        let op = unop ~loc:(to_loc $loc($1)) Ptree.Punop_not in
         eunop ~loc:(to_loc $loc) op e
     }
     | "-" e = expr %prec PREC_UNARY_MINUS {
-        let op = unop ~loc:(to_loc $loc($1)) Parsetree.Punop_neg in
+        let op = unop ~loc:(to_loc $loc($1)) Ptree.Punop_neg in
         eunop ~loc:(to_loc $loc) op e
     }
     | "pre" e = expr {
-        let op = unop ~loc:(to_loc $loc($1)) Parsetree.Punop_pre in
+        let op = unop ~loc:(to_loc $loc($1)) Ptree.Punop_pre in
         eunop ~loc:(to_loc $loc) op e
     }
     | "?" e = expr {
-        let op = unop ~loc:(to_loc $loc($1)) Parsetree.Punop_is_some in
+        let op = unop ~loc:(to_loc $loc($1)) Ptree.Punop_is_some in
         eunop ~loc:(to_loc $loc) op e
     }
 
@@ -234,21 +234,21 @@ tuple_elements:
     | e1 = expr "," e2 = expr { [e1; e2] }
 
 %inline binop:
-    | "&&" { binop ~loc:(to_loc $loc) Parsetree.Pbinop_and }
-    | "||" { binop ~loc:(to_loc $loc) Parsetree.Pbinop_or }
-    | "=>" { binop ~loc:(to_loc $loc) Parsetree.Pbinop_implies }
-    | "+" { binop ~loc:(to_loc $loc) Parsetree.Pbinop_add }
-    | "-" { binop ~loc:(to_loc $loc) Parsetree.Pbinop_sub }
-    | "*" { binop ~loc:(to_loc $loc) Parsetree.Pbinop_mul }
-    | "/" { binop ~loc:(to_loc $loc) Parsetree.Pbinop_div }
-    | "==" { binop ~loc:(to_loc $loc) Parsetree.Pbinop_eq }
-    | "!=" { binop ~loc:(to_loc $loc) Parsetree.Pbinop_neq }
-    | "<" { binop ~loc:(to_loc $loc) Parsetree.Pbinop_lt }
-    | "<=" { binop ~loc:(to_loc $loc) Parsetree.Pbinop_leq }
-    | ">" { binop ~loc:(to_loc $loc) Parsetree.Pbinop_gt }
-    | ">=" { binop ~loc:(to_loc $loc) Parsetree.Pbinop_geq }
-    | "->" { binop ~loc:(to_loc $loc) Parsetree.Pbinop_arrow }
-    | "fby" { binop ~loc:(to_loc $loc) Parsetree.Pbinop_fby }
+    | "&&" { binop ~loc:(to_loc $loc) Ptree.Pbinop_and }
+    | "||" { binop ~loc:(to_loc $loc) Ptree.Pbinop_or }
+    | "=>" { binop ~loc:(to_loc $loc) Ptree.Pbinop_implies }
+    | "+" { binop ~loc:(to_loc $loc) Ptree.Pbinop_add }
+    | "-" { binop ~loc:(to_loc $loc) Ptree.Pbinop_sub }
+    | "*" { binop ~loc:(to_loc $loc) Ptree.Pbinop_mul }
+    | "/" { binop ~loc:(to_loc $loc) Ptree.Pbinop_div }
+    | "==" { binop ~loc:(to_loc $loc) Ptree.Pbinop_eq }
+    | "!=" { binop ~loc:(to_loc $loc) Ptree.Pbinop_neq }
+    | "<" { binop ~loc:(to_loc $loc) Ptree.Pbinop_lt }
+    | "<=" { binop ~loc:(to_loc $loc) Ptree.Pbinop_leq }
+    | ">" { binop ~loc:(to_loc $loc) Ptree.Pbinop_gt }
+    | ">=" { binop ~loc:(to_loc $loc) Ptree.Pbinop_geq }
+    | "->" { binop ~loc:(to_loc $loc) Ptree.Pbinop_arrow }
+    | "fby" { binop ~loc:(to_loc $loc) Ptree.Pbinop_fby }
 
 /* Definition of system file parser 
  * This could go into its own file, but ultimately we should 

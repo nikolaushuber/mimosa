@@ -1,0 +1,8 @@
+File "multi_def.mim", line 4, characters 4-5
+4 |     c = b;
+        ^
+Error: Redefinition of local symbol c
+First defined here:
+3 |     c = a;
+        ^
+

@@ -1,4 +1,4 @@
-open Parsetree
+open Ptree
 module Map = Misc.Stdlib.String.Map
 
 let check_global_names name_map pack_item =
@@ -7,9 +7,9 @@ let check_global_names name_map pack_item =
       match Map.find_opt s.pstep_name.txt name_map with
       | None -> Map.add s.pstep_name.txt s.pstep_loc name_map |> Reserr.ok
       | Some loc ->
-          Error.
-            (Non_unique_global_symbol (s.pstep_name.txt, loc), s.pstep_name.loc)
-          |> Reserr.error)
+          Reserr.error
+            ( Error.Non_unique_global_symbol (s.pstep_name.txt, loc),
+              s.pstep_name.loc ))
   | _ -> failwith "Not yet implemented"
 
 let check { ppack_items; _ } =

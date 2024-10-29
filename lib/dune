@@ -1,6 +1,6 @@
 (library
  (name mimosa)
- (libraries fmt compiler-libs.common cmdliner pp_loc)
+ (libraries fmt compiler-libs.common cmdliner pp_loc tsort)
  (preprocess
   (pps ppx_sexp_conv)))
 

@@ -1,0 +1,4 @@
+step test (input, input) = output
+{
+    output = input;
+}

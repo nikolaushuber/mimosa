@@ -1,5 +1,4 @@
 File "redefine_step.mim", line 6, characters 5-8
 6 | step add (d, e) = f
          ^^^
-Error: Redefinition of global symbol "add".
-
+Error: Redefinition of global symbol add
