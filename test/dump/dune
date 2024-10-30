@@ -27,3 +27,18 @@
  (action
   (progn
    (diff cyclic_error.expected cyclic_error))))
+
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stdout-to
+   eqorder_output
+   (run mimosa dump eqorder %{dep:eqorder.mim}))))
+
+(rule
+ (alias runtest)
+ (package mimosa)
+ (action
+  (progn
+   (diff eqorder_output.expected eqorder_output))))
