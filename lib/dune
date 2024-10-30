@@ -1,8 +1,6 @@
 (library
  (name mimosa)
- (libraries fmt compiler-libs.common cmdliner pp_loc tsort)
- (preprocess
-  (pps ppx_sexp_conv)))
+ (libraries fmt compiler-libs.common pp_loc tsort))
 
 (ocamllex lexer)
 

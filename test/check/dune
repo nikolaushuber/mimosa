@@ -1,0 +1,16 @@
+(include dune.check.inc)
+
+(executable
+ (name dune_gen_check)
+ (modules dune_gen_check))
+
+(rule
+ (action
+  (with-stdout-to
+   dune.check.inc.gen
+   (run ./dune_gen_check.exe %{read-lines:dune_check.args}))))
+
+(rule
+ (alias runtest)
+ (action
+  (diff dune.check.inc dune.check.inc.gen)))

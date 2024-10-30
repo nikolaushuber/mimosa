@@ -6,6 +6,8 @@ type t =
   | Output_not_defined of string
   | Input_unused of string
   | Dependency_cycle of string list
+  | Package_redefinition of string
+  | Package_dependency_cycle of string list
 
 open Fmt
 
@@ -28,3 +30,7 @@ let pp ppf = function
   | Input_unused name -> pf ppf "Input symbol %s unused" name
   | Dependency_cycle names ->
       pf ppf "Dependency between symbols: @[%a@]" (list ~sep:comma string) names
+  | Package_redefinition name -> pf ppf "Multiple packages with name %s" name
+  | Package_dependency_cycle names ->
+      pf ppf "Cyclic depedency between packages: @[%a@]"
+        (list ~sep:comma string) names
