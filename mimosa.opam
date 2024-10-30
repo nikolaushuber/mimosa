@@ -17,6 +17,7 @@ depends: [
   "fmt"
   "pp_loc"
   "tsort"
+  "sexplib"
   "odoc" {with-doc}
 ]
 build: [

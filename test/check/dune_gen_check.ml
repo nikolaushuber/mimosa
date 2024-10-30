@@ -22,8 +22,8 @@ let rec print_rules pos =
  (action
   (progn
    (diff %s_errors.expected %s_errors))))
-  
-  |}
+
+|}
       m m m m;
     print_rules (pos + 1))
 

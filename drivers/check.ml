@@ -1,8 +1,6 @@
 open Cmdliner
 open Mimosa
 
-let files = Arg.(non_empty & pos_all file [] & info [] ~docv:"FILES")
-
 let main files =
   let open Reserr in
   pp false
@@ -12,6 +10,6 @@ let main files =
      let* _ = map Check_parsetree.check ptrees in
      map Eq_ordering.f ptrees)
 
-let term = Term.(const main $ files)
+let term = Term.(const main $ Args.files)
 let info = Cmd.info "check" ~doc:"Check a given set of files."
 let cmd = Cmd.v info term

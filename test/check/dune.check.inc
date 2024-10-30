@@ -12,8 +12,8 @@
  (action
   (progn
    (diff redefine_step_errors.expected redefine_step_errors))))
-  
-  (rule
+
+(rule
  (deps
   (package mimosa))
  (action
@@ -27,8 +27,8 @@
  (action
   (progn
    (diff multi_inputs_errors.expected multi_inputs_errors))))
-  
-  (rule
+
+(rule
  (deps
   (package mimosa))
  (action
@@ -42,8 +42,8 @@
  (action
   (progn
    (diff multi_def_errors.expected multi_def_errors))))
-  
-  (rule
+
+(rule
  (deps
   (package mimosa))
  (action
@@ -57,8 +57,8 @@
  (action
   (progn
    (diff cyclic_step_errors.expected cyclic_step_errors))))
-  
-  (rule
+
+(rule
  (deps
   (package mimosa))
  (action
@@ -72,8 +72,8 @@
  (action
   (progn
    (diff unused_input_errors.expected unused_input_errors))))
-  
-  (rule
+
+(rule
  (deps
   (package mimosa))
  (action
@@ -87,5 +87,4 @@
  (action
   (progn
    (diff missing_output_errors.expected missing_output_errors))))
-  
-  
+

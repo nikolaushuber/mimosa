@@ -1,0 +1,4 @@
+step test a = b
+{
+    b = CyclicB.test a;
+}

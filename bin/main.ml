@@ -1,8 +1,9 @@
 open Cmdliner
+open Drivers
 
 let () =
   let doc = "Run mimosa." in
-  let info = Cmd.info "ortac" ~doc in
-  let cmds = [ Drivers.Check.cmd ] in
+  let info = Cmd.info "mimosa" ~doc in
+  let cmds = [ Check.cmd; Dump.cmd ] in
   let group = Cmd.group info cmds in
   Cmd.eval group |> exit

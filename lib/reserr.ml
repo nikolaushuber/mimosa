@@ -62,26 +62,28 @@ let rec fold_left f acc = function
       let* acc = f acc x in
       fold_left f acc xs
 
+open Fmt
+
 let pp_loc ppf loc =
-  let file = loc.Location.loc_start.pos_fname in
-  let input = Pp_loc.Input.file file in
-  Pp_loc.pp ppf ~max_lines:10 ~input
-    [
-      ( Pp_loc.Position.of_lexing loc.loc_start,
-        Pp_loc.Position.of_lexing loc.loc_end );
-    ]
+  if Location.is_none loc then ()
+  else
+    let file = loc.Location.loc_start.pos_fname in
+    let input = Pp_loc.Input.file file in
+    pf ppf "%a@\n%a"
+      (styled `Bold Location.print_loc)
+      loc
+      (Pp_loc.pp ~max_lines:10 ~input)
+      [
+        ( Pp_loc.Position.of_lexing loc.loc_start,
+          Pp_loc.Position.of_lexing loc.loc_end );
+      ]
 
 let pp_err ppf (err, loc) =
-  let open Fmt in
-  pf ppf "%a@\n%a@[%a: %a@]"
-    (styled `Bold Location.print_loc)
-    loc pp_loc loc (styled `Bold string) "Error" Error.pp err
+  pf ppf "%a@[%a: %a@]" pp_loc loc (styled `Bold string) "Error" Error.pp err
 
 let pp_warn _ _ = ()
 
-let pp quiet pp_ok ppf =
-  let open Fmt in
-  function
+let pp quiet pp_ok ppf = function
   | Ok x, w -> (
       pp_ok ppf x;
       if not quiet then

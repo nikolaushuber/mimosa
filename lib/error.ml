@@ -32,5 +32,5 @@ let pp ppf = function
       pf ppf "Dependency between symbols: @[%a@]" (list ~sep:comma string) names
   | Package_redefinition name -> pf ppf "Multiple packages with name %s" name
   | Package_dependency_cycle names ->
-      pf ppf "Cyclic depedency between packages: @[%a@]"
+      pf ppf "Cyclic dependency between packages: @[%a@]"
         (list ~sep:comma string) names
