@@ -62,7 +62,7 @@ let f p =
     let name = step.pstep_name.txt in
     let dep = (name, Set.elements steps_used) in
     match Map.find_opt name step_map with
-    | None -> (Map.add name step.pstep_loc step_map, dep :: deps) |> ok
+    | None -> (Map.add name step.pstep_name.loc step_map, dep :: deps) |> ok
     | Some loc ->
         let err = Error.Step_redefine (name, loc) in
         error (err, step.pstep_name.loc)

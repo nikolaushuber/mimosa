@@ -17,7 +17,15 @@ let pp ppf = function
   | Lexer_unknown_character c -> pf ppf "Unknown character '%c'" c
   | Lexer_eof_inside_comment -> pf ppf "Reached end-of-file inside comment"
   | Syntax_error -> pf ppf "Syntax error"
-  | Step_redefine (name, _) -> pf ppf "Redefinition of global symbol %s" name
+  | Step_redefine (name, loc) ->
+      let file = loc.Location.loc_start.pos_fname in
+      let input = Pp_loc.Input.file file in
+      pf ppf "Redefinition of step %s@\nFirst defined here:@\n%a" name
+        (Pp_loc.pp ~max_lines:10 ~input)
+        [
+          ( Pp_loc.Position.of_lexing loc.loc_start,
+            Pp_loc.Position.of_lexing loc.loc_end );
+        ]
   | Local_symbol_redef (name, loc) ->
       let file = loc.Location.loc_start.pos_fname in
       let input = Pp_loc.Input.file file in
