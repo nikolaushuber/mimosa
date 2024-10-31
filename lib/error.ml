@@ -1,6 +1,7 @@
 type t =
   | Lexer_unknown_character of char
   | Lexer_eof_inside_comment
+  | Syntax_error
   | Step_redefine of string * Location.t
   | Local_symbol_redef of string * Location.t
   | Output_not_defined of string
@@ -15,6 +16,7 @@ open Fmt
 let pp ppf = function
   | Lexer_unknown_character c -> pf ppf "Unknown character '%c'" c
   | Lexer_eof_inside_comment -> pf ppf "Reached end-of-file inside comment"
+  | Syntax_error -> pf ppf "Syntax error"
   | Step_redefine (name, _) -> pf ppf "Redefinition of global symbol %s" name
   | Local_symbol_redef (name, loc) ->
       let file = loc.Location.loc_start.pos_fname in
