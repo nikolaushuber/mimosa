@@ -1,4 +1,4 @@
-step test in = out
+step test in --> out
 {
     tmp1 = tmp2;
     tmp2 = tmp1;

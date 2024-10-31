@@ -1,14 +1,14 @@
-step test1 a = b
+step test1 a --> b
 {
     b = test3 a;
 }
 
-step test2 a = b
+step test2 a --> b
 {
     b = test1 a;
 }
 
-step test3 a = b
+step test3 a --> b
 {
     b = test2 a;
 }

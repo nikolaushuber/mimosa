@@ -1,4 +1,4 @@
-step test input = output
+step test input --> output
 {
     output = 2 * tmp1;
     tmp2 = 4 -> input;

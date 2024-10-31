@@ -1,5 +1,5 @@
 File "cyclic_step.mim", lines 1-6, characters 0-1
-1 | step test in = out
+1 | step test in --> out
 2 | {
 3 |     tmp1 = tmp2;
 4 |     tmp2 = tmp1;

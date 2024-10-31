@@ -1,4 +1,4 @@
-step test (a, b) = c
+step test (a, b) --> c
 {
     c = PackA.add (a, b);
 }

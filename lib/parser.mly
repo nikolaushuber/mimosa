@@ -120,7 +120,7 @@ step:
     |   "step"
         name = located_lower_string
         ps = simple_pattern
-        "="
+        "-" "->"
         rs = simple_pattern
         "{" body = step_body "}"
     {

@@ -1,4 +1,4 @@
-step test (input, input) = output
+step test (input, input) --> output
 {
     output = input;
 }

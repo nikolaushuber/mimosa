@@ -1,4 +1,4 @@
-step test a = b
+step test a --> b
 {
     b = CyclicA.test a;
 }

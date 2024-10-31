@@ -1,4 +1,4 @@
-step add (a, b) = c
+step add (a, b) --> c
 {
     c = a + b;
 }
