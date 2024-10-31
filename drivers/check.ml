@@ -6,9 +6,10 @@ let main files =
   pp false
     (fun _ _ -> ())
     Fmt.stdout
-    (let* ptrees = map Parse.f files in
-     let* _ = map Check_parsetree.check ptrees in
-     map Eq_ordering.f ptrees)
+    (map Parse.f files
+    >>= map Eq_ordering.f
+    >>= Dependency.f
+    >>= map Step_ordering.f)
 
 let term = Term.(const main $ Args.files)
 let info = Cmd.info "check" ~doc:"Check a given set of files."

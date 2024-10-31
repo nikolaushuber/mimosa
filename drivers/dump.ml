@@ -16,9 +16,9 @@ let main_pack_dep files =
   let open Reserr in
   let open Fmt in
   pp false (list string) stdout
-    (let* ptrees = map Parse.f files in
-     let* ordered = Dependency.f ptrees in
-     List.map (fun p -> p.Ptree.ppack_name.txt) ordered |> ok)
+    (map Parse.f files
+    >>= Dependency.f
+    >>= map (fun p -> p.Ptree.ppack_name.txt |> ok))
 
 let packdep =
   Cmd.(
@@ -30,8 +30,7 @@ let main_eqorder files =
   let open Reserr in
   let open Fmt in
   pp false (list Ptree_printer.pp) stdout
-    (let* ptrees = map Parse.f files in
-     map Eq_ordering.f ptrees)
+    (map Parse.f files >>= map Eq_ordering.f)
 
 let eqorder =
   Cmd.(

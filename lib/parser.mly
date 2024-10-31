@@ -216,8 +216,8 @@ expr:
         eite ~loc:(to_loc $loc) cond e1 e2
     }
 
-    (* Node application *)
-    | func = simple_expr arg = simple_expr {
+    (* Step application *)
+    | func = ident_loc arg = simple_expr {
         eapply ~loc:(to_loc $loc) func arg
     }
 

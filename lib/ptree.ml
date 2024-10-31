@@ -55,7 +55,7 @@ and expr_desc =
   | Pexpr_either of expression * expression
   | Pexpr_tuple of expression list
   | Pexpr_ite of expression * expression * expression
-  | Pexpr_apply of expression * expression
+  | Pexpr_apply of Lident.t loc * expression
   | Pexpr_match of expression * case list
   | Pexpr_none
   | Pexpr_some of expression

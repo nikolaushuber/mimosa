@@ -37,7 +37,7 @@ let vars_used_by_expr =
     | Pexpr_unop (_, e) -> aux set e
     | Pexpr_binop (_, e1, e2) -> fold_left aux set [ e1; e2 ]
     | Pexpr_either (e1, e2) -> fold_left aux set [ e1; e2 ]
-    | Pexpr_apply (e1, e2) -> fold_left aux set [ e1; e2 ]
+    | Pexpr_apply (_, e) -> aux set e
     | Pexpr_tuple es -> fold_left aux set es
     | Pexpr_ite (e1, e2, e3) -> fold_left aux set [ e1; e2; e3 ]
     | Pexpr_match (e, cases) ->
@@ -115,7 +115,7 @@ let order_step step =
         | Tsort.Sorted list -> ok list
         | ErrorCycle list ->
             let names = List.map (Fun.flip List.assoc rev_map) list in
-            let err = Error.Dependency_cycle names in
+            let err = Error.Cycle_in_equations names in
             error (err, step.pstep_loc)
       in
 

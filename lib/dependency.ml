@@ -16,8 +16,15 @@ let pack_in_expr acc =
         | Ldot (p, _) -> Set.add p acc)
     | Pexpr_constant _ -> acc
     | Pexpr_unop (_, e) -> aux acc e
-    | Pexpr_binop (_, e1, e2) | Pexpr_apply (e1, e2) | Pexpr_either (e1, e2) ->
+    | Pexpr_binop (_, e1, e2) | Pexpr_either (e1, e2) ->
         List.fold_left aux acc [ e1; e2 ]
+    | Pexpr_apply (f, e) ->
+        let acc' =
+          match f.txt with
+          | Lident _ -> acc
+          | Ldot (p, _) -> Set.add p acc
+        in
+        aux acc' e
     | Pexpr_tuple es -> List.fold_left aux acc es
     | Pexpr_ite (e1, e2, e3) -> List.fold_left aux acc [ e1; e2; e3 ]
     | Pexpr_match (e, cases) ->
@@ -78,7 +85,7 @@ let f ps =
     | Tsort.Sorted list -> ok list
     | ErrorCycle list ->
         let names = List.map (List.nth packages) list in
-        let err = Error.Package_dependency_cycle names in
+        let err = Error.Cycle_in_packages names in
         error (err, Location.none)
   in
   List.map (List.nth ps) sorted |> ok
