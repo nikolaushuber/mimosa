@@ -1,8 +1,10 @@
+open Typing
+
 type pat = { pat_desc : pat_desc; pat_ty : Type.t }
 and pat_desc = PAny | PUnit | PVar of string | PTuple of pat list
 
-type const = Unit | Int of int | Bool of bool
-type unop = Not | Neg | Pre | IsSome
+type const = CUnit | CInt of int | CReal of float | CBool of bool
+type unop = Not | Neg | RNeg | IsSome
 
 type binop =
   | And
@@ -12,14 +14,20 @@ type binop =
   | Sub
   | Mul
   | Div
+  | RAdd
+  | RSub
+  | RMul
+  | RDiv
   | Eq
   | Neq
   | Lt
   | Leq
   | Gt
   | Geq
-  | Arrow
-  | Fby
+  | RLt
+  | RLeq
+  | RGt
+  | RGeq
 
 type expr = { expr_desc : expr_desc; expr_ty : Type.t }
 
@@ -31,8 +39,11 @@ and expr_desc =
   | EEither of expr * expr
   | ETuple of expr list
   | EIf of expr * expr * expr
-  | EApp of expr * expr
+  | EApp of Lident.t * expr
   | EMatch of expr * case list
+  | EArrow of expr * expr
+  | EFby of expr * expr
+  | EPre of expr
   | ENone
   | ESome of expr
 
@@ -44,3 +55,6 @@ type step = {
   step_output : pat;
   step_def : (pat * expr) list;
 }
+
+type pack_item = Step of step
+type t = pack_item list

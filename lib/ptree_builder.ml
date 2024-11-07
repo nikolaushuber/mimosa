@@ -8,6 +8,7 @@ let ttuple ?(loc = noloc) tys = mk_ty (Ptype_tuple tys) loc
 let toption ?(loc = noloc) ty = mk_ty (Ptype_option ty) loc
 let tint ?(loc = noloc) () = mk_ty Ptype_int loc
 let tbool ?(loc = noloc) () = mk_ty Ptype_bool loc
+let treal ?(loc = noloc) () = mk_ty Ptype_real loc
 let mk_pattern ppat_desc ppat_ty ppat_loc = { ppat_desc; ppat_ty; ppat_loc }
 let pany ?(loc = noloc) ty = mk_pattern Ppat_any ty loc
 let punit ?(loc = noloc) () = mk_pattern Ppat_unit None loc
@@ -29,6 +30,9 @@ let etuple ?(loc = noloc) exprs = mk_expr (Pexpr_tuple exprs) loc
 let eite ?(loc = noloc) i t e = mk_expr (Pexpr_ite (i, t, e)) loc
 let eapply ?(loc = noloc) func arg = mk_expr (Pexpr_apply (func, arg)) loc
 let ematch ?(loc = noloc) e cases = mk_expr (Pexpr_match (e, cases)) loc
+let earrow ?(loc = noloc) e1 e2 = mk_expr (Pexpr_arrow (e1, e2)) loc
+let efby ?(loc = noloc) e1 e2 = mk_expr (Pexpr_fby (e1, e2)) loc
+let epre ?(loc = noloc) e = mk_expr (Pexpr_pre e) loc
 let enone ?(loc = noloc) () = mk_expr Pexpr_none loc
 let esome ?(loc = noloc) e = mk_expr (Pexpr_some e) loc
 let case pcase_lhs pcase_rhs = { pcase_lhs; pcase_rhs }

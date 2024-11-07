@@ -10,6 +10,9 @@ type t =
   | Cycle_in_equations of string list
   | Cycle_in_packages of string list
   | Package_redefinition of string
+  | Unification of string * string
+  | Unbound_package of string
+  | Unbound_value of string
 
 open Fmt
 
@@ -47,3 +50,9 @@ let pp ppf = function
   | Cycle_in_packages names ->
       pf ppf "Cyclic dependency between packages: @[%a@]"
         (list ~sep:comma string) names
+  | Unification (t1, t2) ->
+      pf ppf
+        "This expression has type %s, but an expression of type %s was expected"
+        t2 t1
+  | Unbound_package name -> pf ppf "Undefined package %s" name
+  | Unbound_value name -> pf ppf "Unknown name %s" name

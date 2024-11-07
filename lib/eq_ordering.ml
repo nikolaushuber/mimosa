@@ -34,9 +34,12 @@ let vars_used_by_expr =
         | Lident s -> Set.add s set |> ok
         | Ldot _ -> ok set)
     | Pexpr_constant _ -> ok set
-    | Pexpr_unop (_, e) -> aux set e
-    | Pexpr_binop (_, e1, e2) -> fold_left aux set [ e1; e2 ]
-    | Pexpr_either (e1, e2) -> fold_left aux set [ e1; e2 ]
+    | Pexpr_unop (_, e) | Pexpr_pre e -> aux set e
+    | Pexpr_binop (_, e1, e2)
+    | Pexpr_fby (e1, e2)
+    | Pexpr_arrow (e1, e2)
+    | Pexpr_either (e1, e2) ->
+        fold_left aux set [ e1; e2 ]
     | Pexpr_apply (_, e) -> aux set e
     | Pexpr_tuple es -> fold_left aux set es
     | Pexpr_ite (e1, e2, e3) -> fold_left aux set [ e1; e2; e3 ]

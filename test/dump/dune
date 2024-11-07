@@ -42,3 +42,17 @@
  (action
   (progn
    (diff eqorder_output.expected eqorder_output))))
+
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stdout-to
+   type_infer_output
+   (run mimosa dump ttree %{dep:type_infer.mim}))))
+
+(rule
+ (alias runtest)
+ (action
+  (progn
+   (diff type_infer_output.expected type_infer_output))))

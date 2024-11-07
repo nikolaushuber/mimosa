@@ -9,6 +9,7 @@ and sexp_of_core_type_desc = function
   | Ptype_option t -> List [ Atom "?"; sexp_of_core_type t ]
   | Ptype_int -> Atom "int"
   | Ptype_bool -> Atom "bool"
+  | Ptype_real -> Atom "real"
 
 let rec sexp_of_pattern pat =
   let desc = sexp_of_pattern_desc pat.ppat_desc in
@@ -25,6 +26,7 @@ and sexp_of_pattern_desc = function
 let sexp_of_constant = function
   | Pconst_int i -> Atom (string_of_int i)
   | Pconst_bool b -> Atom (string_of_bool b)
+  | Pconst_real r -> Atom (string_of_float r)
   | Pconst_unit -> Atom "()"
 
 let rec sexp_of_unop unop = sexp_of_unop_desc unop.punop_desc
@@ -32,7 +34,7 @@ let rec sexp_of_unop unop = sexp_of_unop_desc unop.punop_desc
 and sexp_of_unop_desc = function
   | Punop_not -> Atom "not"
   | Punop_neg -> Atom "-"
-  | Punop_pre -> Atom "pre"
+  | Punop_rneg -> Atom "-."
   | Punop_is_some -> Atom "?"
 
 let rec sexp_of_binop binop = sexp_of_binop_desc binop.pbinop_desc
@@ -45,14 +47,20 @@ and sexp_of_binop_desc = function
   | Pbinop_sub -> Atom "-"
   | Pbinop_mul -> Atom "*"
   | Pbinop_div -> Atom "/"
+  | Pbinop_radd -> Atom "+."
+  | Pbinop_rsub -> Atom "-."
+  | Pbinop_rmul -> Atom "*."
+  | Pbinop_rdiv -> Atom "/."
   | Pbinop_eq -> Atom "=="
   | Pbinop_neq -> Atom "!="
   | Pbinop_lt -> Atom "<"
   | Pbinop_leq -> Atom "<="
   | Pbinop_gt -> Atom ">"
   | Pbinop_geq -> Atom ">="
-  | Pbinop_arrow -> Atom "->"
-  | Pbinop_fby -> Atom "fby"
+  | Pbinop_rlt -> Atom "<."
+  | Pbinop_rleq -> Atom "<=."
+  | Pbinop_rgt -> Atom ">."
+  | Pbinop_rgeq -> Atom ">=."
 
 let rec sexp_of_expression expr = sexp_of_expr_desc expr.pexpr_desc
 
@@ -93,6 +101,17 @@ and sexp_of_expr_desc = function
       let e' = sexp_of_expression e in
       let cases' = List.map sexp_of_case cases in
       List [ Atom "match"; e'; List cases' ]
+  | Pexpr_arrow (e1, e2) ->
+      let e1' = sexp_of_expression e1 in
+      let e2' = sexp_of_expression e2 in
+      List [ Atom "->"; e1'; e2' ]
+  | Pexpr_fby (e1, e2) ->
+      let e1' = sexp_of_expression e1 in
+      let e2' = sexp_of_expression e2 in
+      List [ Atom "fby"; e1'; e2' ]
+  | Pexpr_pre e ->
+      let e' = sexp_of_expression e in
+      List [ Atom "pre"; e' ]
   | Pexpr_none -> Atom "None"
   | Pexpr_some e ->
       let e' = sexp_of_expression e in

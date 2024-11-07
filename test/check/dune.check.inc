@@ -103,3 +103,18 @@
   (progn
    (diff cyclic_in_steps_errors.expected cyclic_in_steps_errors))))
 
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stderr-to
+   type_error_errors
+   (run mimosa check %{dep:type_error.mim}))))
+
+(rule
+ (alias runtest)
+ (package mimosa)
+ (action
+  (progn
+   (diff type_error_errors.expected type_error_errors))))
+

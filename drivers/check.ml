@@ -9,7 +9,8 @@ let main files =
     (map Parse.f files
     >>= map Eq_ordering.f
     >>= Dependency.f
-    >>= map Step_ordering.f)
+    >>= Dependency.Tree.map Step_ordering.f
+    >>= Typecheck.f)
 
 let term = Term.(const main $ Args.files)
 let info = Cmd.info "check" ~doc:"Check a given set of files."

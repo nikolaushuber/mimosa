@@ -8,6 +8,7 @@ and core_type_desc =
   | Ptype_option of core_type
   | Ptype_int
   | Ptype_bool
+  | Ptype_real
 
 type pattern = {
   ppat_desc : pattern_desc;
@@ -21,29 +22,39 @@ and pattern_desc =
   | Ppat_var of string loc
   | Ppat_tuple of pattern list
 
-type constant = Pconst_int of int | Pconst_bool of bool | Pconst_unit
+type constant =
+  | Pconst_int of int
+  | Pconst_real of float
+  | Pconst_bool of bool
+  | Pconst_unit
 
 type unop = { punop_desc : unop_desc; punop_loc : Location.t }
-and unop_desc = Punop_not | Punop_neg | Punop_pre | Punop_is_some
+and unop_desc = Punop_not | Punop_neg | Punop_rneg | Punop_is_some
 
 type binop = { pbinop_desc : binop_desc; pbinop_loc : Location.t }
 
 and binop_desc =
-  | Pbinop_and
+  | Pbinop_and (* Boolean operators *)
   | Pbinop_or
   | Pbinop_implies
-  | Pbinop_add
+  | Pbinop_add (* Integer operators *)
   | Pbinop_sub
   | Pbinop_mul
   | Pbinop_div
-  | Pbinop_eq
+  | Pbinop_radd (* Real operators *)
+  | Pbinop_rsub
+  | Pbinop_rmul
+  | Pbinop_rdiv
+  | Pbinop_eq (* Polymorphic comparison operators *)
   | Pbinop_neq
-  | Pbinop_lt
+  | Pbinop_lt (* Integer comparison operators *)
   | Pbinop_leq
   | Pbinop_gt
   | Pbinop_geq
-  | Pbinop_arrow
-  | Pbinop_fby
+  | Pbinop_rlt (* Real comparison operators *)
+  | Pbinop_rleq
+  | Pbinop_rgt
+  | Pbinop_rgeq
 
 type expression = { pexpr_desc : expr_desc; pexpr_loc : Location.t }
 
@@ -57,6 +68,9 @@ and expr_desc =
   | Pexpr_ite of expression * expression * expression
   | Pexpr_apply of Lident.t loc * expression
   | Pexpr_match of expression * case list
+  | Pexpr_arrow of expression * expression
+  | Pexpr_fby of expression * expression
+  | Pexpr_pre of expression
   | Pexpr_none
   | Pexpr_some of expression
 

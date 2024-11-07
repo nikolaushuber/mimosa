@@ -1,25 +1,23 @@
 (* Orders steps within a package *)
 
 open Ptree
-module Map = Map.Make (String)
-module Set = Set.Make (String)
 
 let steps_used_in_expr acc =
   let rec aux acc expr =
     match expr.pexpr_desc with
     | Pexpr_ident _ -> acc
     | Pexpr_constant _ -> acc
-    | Pexpr_unop (_, e) -> aux acc e
-    | Pexpr_binop (_, e1, e2) ->
-        let acc' = aux acc e1 in
-        aux acc' e2
+    | Pexpr_unop (_, e) | Pexpr_pre e -> aux acc e
+    | Pexpr_binop (_, e1, e2)
+    | Pexpr_arrow (e1, e2)
+    | Pexpr_fby (e1, e2)
     | Pexpr_either (e1, e2) ->
         let acc' = aux acc e1 in
         aux acc' e2
     | Pexpr_apply (f, e) ->
         let acc' =
           match f.txt with
-          | Lident id -> Set.add id acc
+          | Lident id -> Set.String.add id acc
           | Ldot _ -> acc
         in
         aux acc' e
@@ -36,7 +34,7 @@ let steps_used_in_expr acc =
 let steps_used_by_step step =
   List.fold_left
     (fun acc (_, rhs) -> steps_used_in_expr acc rhs)
-    Set.empty step.pstep_def
+    Set.String.empty step.pstep_def
 
 let f p =
   let open Reserr in
@@ -60,14 +58,15 @@ let f p =
   let aux (step_map, deps) step =
     let steps_used = steps_used_by_step step in
     let name = step.pstep_name.txt in
-    let dep = (name, Set.elements steps_used) in
-    match Map.find_opt name step_map with
-    | None -> (Map.add name step.pstep_name.loc step_map, dep :: deps) |> ok
+    let dep = (name, Set.String.elements steps_used) in
+    match Map.String.find_opt name step_map with
+    | None ->
+        (Map.String.add name step.pstep_name.loc step_map, dep :: deps) |> ok
     | Some loc ->
         let err = Error.Step_redefine (name, loc) in
         error (err, step.pstep_name.loc)
   in
-  let* _, deps = fold_left aux (Map.empty, []) steps in
+  let* _, deps = fold_left aux (Map.String.empty, []) steps in
   let step_map =
     List.mapi
       (fun i step ->

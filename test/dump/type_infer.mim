@@ -1,0 +1,36 @@
+step test_add (a, b) --> c
+{
+    c = a + b;
+}
+
+step test_mul (a, b) --> c
+{
+    c = a * b;
+}
+
+step test_and (a, b) --> c
+{
+    c = a && b;
+}
+
+step test_not a --> b
+{
+    b = ~a;
+}
+
+step fst a --> b
+{
+    b, _ = a;
+}
+
+step test_if (a, b, c) --> d
+{
+    d = if a then b else c;
+}
+
+step add_tup a --> b
+{
+    c, _ = a;
+    _, d = a;
+    b = c + d;
+}

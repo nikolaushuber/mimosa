@@ -15,10 +15,12 @@ let ptree =
 let main_pack_dep files =
   let open Reserr in
   let open Fmt in
-  pp false (list string) stdout
+  pp false
+    (Dependency.Tree.pp string)
+    stdout
     (map Parse.f files
     >>= Dependency.f
-    >>= map (fun p -> p.Ptree.ppack_name.txt |> ok))
+    >>= Dependency.Tree.map (fun p -> p.Ptree.ppack_name.txt |> ok))
 
 let packdep =
   Cmd.(
@@ -38,8 +40,26 @@ let eqorder =
       (info "eqorder" ~doc:"Dump parsetree after equation ordering.")
       Term.(const main_eqorder $ Args.files))
 
+let main_dump_ttree files =
+  let open Reserr in
+  let open Fmt in
+  pp false
+    (Dependency.Tree.pp Ttree_printer.pp)
+    stdout
+    (map Parse.f files
+    >>= map Eq_ordering.f
+    >>= Dependency.f
+    >>= Dependency.Tree.map Step_ordering.f
+    >>= Typecheck.f)
+
+let ttree =
+  Cmd.(
+    v
+      (info "ttree" ~doc:"Dump AST after type checking.")
+      Term.(const main_dump_ttree $ Args.files))
+
 let cmd =
   let doc = "Dump tool for debugging information." in
   let info = Cmd.info "dump" ~doc in
-  let cmds = [ ptree; packdep; eqorder ] in
+  let cmds = [ ptree; packdep; eqorder; ttree ] in
   Cmd.group info cmds

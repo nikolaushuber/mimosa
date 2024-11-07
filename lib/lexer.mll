@@ -22,7 +22,7 @@ rule tokenize = parse
     | "(*" { read_comment lexbuf }
 
     (* Unary operators *)
-    | "not" { TK_NOT }
+    | "~" { TK_NOT }
     | "pre" { TK_PRE }
     | "?" { TK_QUESTIONMARK }
 
@@ -34,12 +34,20 @@ rule tokenize = parse
     | "-" { TK_SUB }
     | "*" { TK_MUL }
     | "/" { TK_DIV }
+    | "+." { TK_RADD }
+    | "-." { TK_RSUB }
+    | "*." { TK_RMUL }
+    | "/." { TK_RDIV }
     | "==" { TK_EQ }
     | "!=" { TK_NEQ }
     | "<" { TK_LT }
     | "<=" { TK_LEQ }
     | ">" { TK_GT }
     | ">=" { TK_GEQ }
+    | "<." { TK_RLT }
+    | "<=." { TK_RLEQ }
+    | ">." { TK_RGT }
+    | ">=." { TK_RGEQ }
     | "->" { TK_ARROW }
     | "fby" { TK_FBY }
 
@@ -62,6 +70,7 @@ rule tokenize = parse
     (* Types *)
     | "int" { TK_TY_INT }
     | "bool" { TK_TY_BOOL }
+    | "real" { TK_TY_REAL }
 
     (* Constants *)
     | "true" { TK_BOOL true }

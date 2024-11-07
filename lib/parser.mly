@@ -15,7 +15,7 @@
 %}
 
 (* Unary operators *)
-%token TK_NOT "not"
+%token TK_NOT "~"
 %token TK_PRE "pre"
 %token TK_QUESTIONMARK "?"
 
@@ -27,12 +27,20 @@
 %token TK_SUB "-"
 %token TK_MUL "*"
 %token TK_DIV "/"
+%token TK_RADD "+."
+%token TK_RSUB "-."
+%token TK_RMUL "*."
+%token TK_RDIV "/."
 %token TK_EQ "=="
 %token TK_NEQ "!="
 %token TK_LT "<"
 %token TK_LEQ "<="
 %token TK_GT ">"
 %token TK_GEQ ">="
+%token TK_RLT "<."
+%token TK_RLEQ "<=."
+%token TK_RGT ">."
+%token TK_RGEQ ">=."
 %token TK_ARROW "->"
 %token TK_FBY "fby"
 
@@ -58,6 +66,7 @@
 (* Types *)
 %token TK_TY_INT "int"
 %token TK_TY_BOOL "bool"
+%token TK_TY_REAL "real"
 
 (* Constants *)
 %token <int> TK_INT
@@ -87,10 +96,10 @@
 %left "=>"
 %left "||"
 %left "&&"
-%left "==" "!=" "<" "<=" ">" ">="
+%left "==" "!=" "<" "<=" ">" ">=" "<." "<=." ">." ">=."
 %right PREC_UNARY_NOT
-%left "+" "-"
-%left "*" "/"
+%left "+" "-" "+." "-."
+%left "*" "/" "*." "/."
 %right "pre"
 %right PREC_UNARY_MINUS "?"
 %nonassoc "Some"
@@ -130,6 +139,7 @@ step:
 simple_ty:
     | "int" { tint ~loc:(to_loc $loc) () }
     | "bool" { tbool ~loc:(to_loc $loc) () }
+    | "real" { treal ~loc:(to_loc $loc) () }
     | "(" t = ty ")" { t }
 
 ty:
@@ -188,7 +198,7 @@ expr:
     | e = simple_expr { e }
 
     (* Unary operations *)
-    | "not" e = expr %prec PREC_UNARY_NOT {
+    | "~" e = expr %prec PREC_UNARY_NOT {
         let op = unop ~loc:(to_loc $loc($1)) Ptree.Punop_not in
         eunop ~loc:(to_loc $loc) op e
     }
@@ -196,8 +206,8 @@ expr:
         let op = unop ~loc:(to_loc $loc($1)) Ptree.Punop_neg in
         eunop ~loc:(to_loc $loc) op e
     }
-    | "pre" e = expr {
-        let op = unop ~loc:(to_loc $loc($1)) Ptree.Punop_pre in
+    | "-." e = expr %prec PREC_UNARY_MINUS {
+        let op = unop ~loc:(to_loc $loc($1)) Ptree.Punop_rneg in
         eunop ~loc:(to_loc $loc) op e
     }
     | "?" e = expr {
@@ -210,6 +220,11 @@ expr:
 
     (* Binary operations *)
     | e1 = expr op = binop e2 = expr { ebinop ~loc:(to_loc $loc) op e1 e2 }
+
+    (* Temporal operations *)
+    | e1 = expr "->" e2 = expr { earrow ~loc:(to_loc $loc) e1 e2 }
+    | e1 = expr "fby" e2 = expr { efby ~loc:(to_loc $loc) e1 e2 }
+    | "pre" e = expr { epre ~loc:(to_loc $loc) e }
 
     (* Conditional statement *)
     | "if" cond = expr "then" e1 = expr "else" e2 = expr {
@@ -241,14 +256,20 @@ tuple_elements:
     | "-" { binop ~loc:(to_loc $loc) Ptree.Pbinop_sub }
     | "*" { binop ~loc:(to_loc $loc) Ptree.Pbinop_mul }
     | "/" { binop ~loc:(to_loc $loc) Ptree.Pbinop_div }
+    | "+." { binop ~loc:(to_loc $loc) Ptree.Pbinop_radd }
+    | "-." { binop ~loc:(to_loc $loc) Ptree.Pbinop_rsub }
+    | "*." { binop ~loc:(to_loc $loc) Ptree.Pbinop_rmul }
+    | "/." { binop ~loc:(to_loc $loc) Ptree.Pbinop_rdiv }
     | "==" { binop ~loc:(to_loc $loc) Ptree.Pbinop_eq }
     | "!=" { binop ~loc:(to_loc $loc) Ptree.Pbinop_neq }
     | "<" { binop ~loc:(to_loc $loc) Ptree.Pbinop_lt }
     | "<=" { binop ~loc:(to_loc $loc) Ptree.Pbinop_leq }
     | ">" { binop ~loc:(to_loc $loc) Ptree.Pbinop_gt }
     | ">=" { binop ~loc:(to_loc $loc) Ptree.Pbinop_geq }
-    | "->" { binop ~loc:(to_loc $loc) Ptree.Pbinop_arrow }
-    | "fby" { binop ~loc:(to_loc $loc) Ptree.Pbinop_fby }
+    | "<." { binop ~loc:(to_loc $loc) Ptree.Pbinop_rlt }
+    | "<=." { binop ~loc:(to_loc $loc) Ptree.Pbinop_rleq }
+    | ">." { binop ~loc:(to_loc $loc) Ptree.Pbinop_rgt }
+    | ">=." { binop ~loc:(to_loc $loc) Ptree.Pbinop_rgeq }
 
 /* Definition of system file parser 
  * This could go into its own file, but ultimately we should 

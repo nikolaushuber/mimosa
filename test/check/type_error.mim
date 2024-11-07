@@ -1,0 +1,4 @@
+step test a --> b
+{
+    b = if a then 5 else false;
+}

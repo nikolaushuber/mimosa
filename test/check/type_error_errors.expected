@@ -1,0 +1,4 @@
+File "type_error.mim", line 3, characters 25-30
+3 |     b = if a then 5 else false;
+                             ^^^^^
+Error: This expression has type bool, but an expression of type int was expected
