@@ -11,3 +11,9 @@ let flatten = function
 
 let last = function
   | Lident s | Ldot (_, s) -> s
+
+let pp ppf =
+  let open Fmt in
+  function
+  | Lident s -> string ppf s
+  | Ldot (p, s) -> pf ppf "%s.%s" p s

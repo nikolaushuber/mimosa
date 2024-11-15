@@ -1,4 +1,4 @@
-open Typing
+open Type
 
 type pat = { pat_desc : pat_desc; pat_ty : Type.t }
 and pat_desc = PAny | PUnit | PVar of string | PTuple of pat list
@@ -39,7 +39,7 @@ and expr_desc =
   | EEither of expr * expr
   | ETuple of expr list
   | EIf of expr * expr * expr
-  | EApp of Lident.t * expr
+  | EApp of expr * expr
   | EMatch of expr * case list
   | EArrow of expr * expr
   | EFby of expr * expr
@@ -56,5 +56,5 @@ type step = {
   step_def : (pat * expr) list;
 }
 
-type pack_item = Step of step
-type t = pack_item list
+type item = Step of step
+type t = { pack_name : string; pack_items : item list }

@@ -1,5 +1,4 @@
 open Ptree
-open Typing
 open Type
 open Reserr
 open Ttree_builder
@@ -18,7 +17,7 @@ let lookup_id genv lenv id state =
   match id.Location.txt with
   | Lident.Lident name -> lookup_name lenv name state
   | Ldot (pack, name) -> (
-      match Map.String.find_opt pack genv with
+      match String.Map.find_opt pack genv with
       | Some env -> lookup_name env name state
       | None ->
           let err = Error.Unbound_package pack in
@@ -26,21 +25,24 @@ let lookup_id genv lenv id state =
           error (err, loc))
 
 let rec ty_expr genv lenv expr state =
-  match expr.pexpr_desc with
-  | Pexpr_ident id -> ty_ident genv lenv id state
-  | Pexpr_constant c -> ty_const c state
-  | Pexpr_unop (op, e) -> ty_unop genv lenv op e state
-  | Pexpr_binop (op, e1, e2) -> ty_binop genv lenv op e1 e2 state
-  | Pexpr_either (e1, e2) -> ty_either genv lenv e1 e2 state
-  | Pexpr_tuple es -> ty_tuple genv lenv es state
-  | Pexpr_ite (c, t, e) -> ty_ite genv lenv c t e state
-  | Pexpr_apply (f, e) -> ty_apply genv lenv f e state
-  | Pexpr_arrow (e1, e2) -> ty_arrow genv lenv e1 e2 state
-  | Pexpr_fby (e1, e2) -> ty_fby genv lenv e1 e2 state
-  | Pexpr_pre e -> ty_expr genv lenv e state
-  | Pexpr_match _ -> failwith "not yet implemented"
-  | Pexpr_none -> ty_none state
-  | Pexpr_some e -> ty_some genv lenv e state
+  let* s, ty, e', state' =
+    match expr.pexpr_desc with
+    | Pexpr_ident id -> ty_ident genv lenv id state
+    | Pexpr_constant c -> ty_const c state
+    | Pexpr_unop (op, e) -> ty_unop genv lenv op e state
+    | Pexpr_binop (op, e1, e2) -> ty_binop genv lenv op e1 e2 state
+    | Pexpr_either (e1, e2) -> ty_either genv lenv e1 e2 state
+    | Pexpr_tuple es -> ty_tuple genv lenv es state
+    | Pexpr_ite (c, t, e) -> ty_ite genv lenv c t e state
+    | Pexpr_apply (f, e) -> ty_apply genv lenv f e state
+    | Pexpr_arrow (e1, e2) -> ty_arrow genv lenv e1 e2 state
+    | Pexpr_fby (e1, e2) -> ty_fby genv lenv e1 e2 state
+    | Pexpr_pre e -> ty_expr genv lenv e state
+    | Pexpr_match _ -> failwith "not yet implemented"
+    | Pexpr_none -> ty_none state
+    | Pexpr_some e -> ty_some genv lenv e state
+  in
+  (s, ty, e', state') |> ok
 
 and ty_ident genv lenv id state =
   let* s, ty, state' = lookup_id genv lenv id state in
@@ -162,7 +164,7 @@ and ty_ite genv lenv c t e state =
   let* s1, tc, c', state' = ty_expr genv lenv c state in
   let lenv' = Env.apply s1 lenv in
   let* s2, tt, t', state'' = ty_expr genv lenv' t state' in
-  let lenv'' = Env.apply s2 lenv in
+  let lenv'' = Env.apply s2 lenv' in
   let* s3, te, e', state''' = ty_expr genv lenv'' e state'' in
   let* s4 = unify ~loc:c.pexpr_loc TBool tc in
   let* s5 = unify ~loc:e.pexpr_loc tt te in
@@ -171,12 +173,12 @@ and ty_ite genv lenv c t e state =
   (s, apply s tt, exp', state''') |> ok
 
 and ty_apply genv lenv f e state =
-  let* s1, ty1, state' = lookup_id genv lenv f state in
-  let* s2, ty2, e', state'' = ty_expr genv (Env.apply s1 lenv) e state' in
+  let* s1, ty_f, f', state' = ty_expr genv lenv f state in
+  let* s2, ty_e, e', state'' = ty_expr genv (Env.apply s1 lenv) e state' in
   let n, state''' = State.next state'' in
-  let* s3 = unify (apply s2 ty1) (TFunc (ty2, TVar n)) in
+  let* s3 = unify ~loc:e.pexpr_loc (apply s2 ty_f) (TFunc (ty_e, TVar n)) in
   let ty = apply s3 (TVar n) in
-  let exp' = eapply f.Location.txt e' ty in
+  let exp' = eapply f' e' ty in
   (Subst.compose_list [ s3; s2; s1 ], ty, exp', state''') |> ok
 
 and ty_arrow genv lenv e1 e2 state =
@@ -210,11 +212,11 @@ and ty_some genv lenv e state =
 let rec ty_core_type lenv map c state =
   match c.ptype_desc with
   | Ptype_var s -> (
-      match Map.String.find_opt s map with
+      match String.Map.find_opt s map with
       | Some t -> (map, t, state)
       | None ->
           let n, state' = State.next state in
-          (Map.String.add s (TVar n) map, TVar n, state'))
+          (String.Map.add s (TVar n) map, TVar n, state'))
   | Ptype_tuple tys ->
       let map', tys, state' =
         List.fold_left
@@ -253,7 +255,7 @@ let rec ty_pattern lenv map p state =
         | None ->
             let n, state' = State.next state in
             let ty = TVar n in
-            let lenv' = Env.add lenv v.txt (Set.Int.empty, ty) in
+            let lenv' = Env.add lenv v.txt (Int.Set.empty, ty) in
             (ty, lenv', state')
       in
       (lenv', map, ty, pvar v.txt ty, state')
@@ -267,74 +269,84 @@ let rec ty_pattern lenv map p state =
       in
       (lenv', map', TTuple (List.rev tys), ptuple (List.rev pats), state')
 
-let rec apply_expr s expr =
+let ty_eq genv lenv map eq state =
+  let lhs, rhs = eq in
+  let* s1, rhs_ty, rhs', state' = ty_expr genv lenv rhs state in
+  let lenv', map', lhs_ty, lhs', state'' =
+    ty_pattern (Env.apply s1 lenv) map lhs state'
+  in
+  let* s2 = unify ~loc:rhs.pexpr_loc lhs_ty rhs_ty in
+  let eq' = (lhs', rhs') in
+  let s = Subst.compose s2 s1 in
+  (s, Env.apply s2 lenv', map', eq', state'') |> ok
+
+let rec apply_subst_expr s expr =
   let open Ttree in
-  let expr_ty = apply s expr.expr_ty in
   let expr_desc =
     match expr.expr_desc with
     | EVar id -> EVar id
     | EConst c -> EConst c
-    | EUnOp (op, e) -> EUnOp (op, apply_expr s e)
-    | EBinOp (op, e1, e2) -> EBinOp (op, apply_expr s e1, apply_expr s e2)
-    | EEither (e1, e2) -> EEither (apply_expr s e1, apply_expr s e2)
-    | ETuple es -> ETuple (List.map (apply_expr s) es)
-    | EIf (c, t, e) -> EIf (apply_expr s c, apply_expr s t, apply_expr s e)
-    | EApp (f, e) -> EApp (f, apply_expr s e)
+    | EUnOp (op, e) -> EUnOp (op, apply_subst_expr s e)
+    | EBinOp (op, e1, e2) ->
+        EBinOp (op, apply_subst_expr s e1, apply_subst_expr s e2)
+    | EEither (e1, e2) -> EEither (apply_subst_expr s e1, apply_subst_expr s e2)
+    | ETuple es -> ETuple (List.map (apply_subst_expr s) es)
+    | EIf (c, t, e) ->
+        EIf (apply_subst_expr s c, apply_subst_expr s t, apply_subst_expr s e)
+    | EApp (e1, e2) -> EApp (apply_subst_expr s e1, apply_subst_expr s e2)
     | EMatch _ -> failwith "not yet implemented"
-    | EArrow (e1, e2) -> EArrow (apply_expr s e1, apply_expr s e2)
-    | EFby (e1, e2) -> EFby (apply_expr s e1, apply_expr s e2)
-    | EPre e -> EPre (apply_expr s e)
+    | EArrow (e1, e2) -> EArrow (apply_subst_expr s e1, apply_subst_expr s e2)
+    | EFby (e1, e2) -> EFby (apply_subst_expr s e1, apply_subst_expr s e2)
+    | EPre e -> EPre (apply_subst_expr s e)
     | ENone -> ENone
-    | ESome e -> ESome (apply_expr s e)
+    | ESome e -> ESome (apply_subst_expr s e)
   in
+  let expr_ty = apply s expr.expr_ty in
   { expr_desc; expr_ty }
 
-let rec apply_pattern s pat =
+let rec apply_subst_pat s pat =
   let open Ttree in
-  let pat_ty = apply s pat.pat_ty in
   let pat_desc =
     match pat.pat_desc with
     | PAny -> PAny
     | PUnit -> PUnit
-    | PVar v -> PVar v
-    | PTuple ps -> PTuple (List.map (apply_pattern s) ps)
+    | PVar s -> PVar s
+    | PTuple ps -> PTuple (List.map (apply_subst_pat s) ps)
   in
+  let pat_ty = apply s pat.pat_ty in
   { pat_desc; pat_ty }
+
+let apply_subst_eq s (lhs, rhs) = (apply_subst_pat s lhs, apply_subst_expr s rhs)
 
 let ty_step genv lenv step =
   let lenv', map, ty1, p1, state' =
-    ty_pattern lenv Map.String.empty step.pstep_input (State.init ())
+    ty_pattern lenv String.Map.empty step.pstep_input (State.init ())
   in
   let lenv'', map', ty2, p2, state'' =
     ty_pattern lenv' map step.pstep_output state'
   in
 
-  let aux (sacc, lenv, map, eqs, state) (lhs, rhs) =
-    let* s1, rhs_ty, rhs', state' = ty_expr genv lenv rhs state in
-    let lenv', map', lhs_ty, lhs', state'' = ty_pattern lenv map lhs state' in
-    let* s2 = unify ~loc:rhs.pexpr_loc lhs_ty rhs_ty in
-    let eqs' = (lhs', rhs') :: eqs in
-    ( Subst.compose_list [ s2; s1; sacc ],
-      Env.apply s2 lenv',
-      map',
-      eqs',
-      state'' )
-    |> ok
+  let rec aux lenv map state = function
+    | [] -> (Subst.empty, []) |> ok
+    | eq :: eqs ->
+        let* s, lenv', map', eq', state' = ty_eq genv lenv map eq state in
+        let* sr, eqs' = aux (Env.apply s lenv') map' state' eqs in
+        (Subst.compose sr s, eq' :: eqs') |> ok
   in
 
-  let* s, _, _, eqs, _ =
-    fold_left aux (Subst.empty, lenv'', map', [], state'') step.pstep_def
-  in
-  let def =
-    List.rev_map (fun (lhs, rhs) -> (apply_pattern s lhs, apply_expr s rhs)) eqs
-  in
+  let* s, eqs = aux lenv'' map' state'' step.pstep_def in
 
   let ty = TFunc (apply s ty1, apply s ty2) in
-  let name = step.pstep_name.txt in
-  let input = apply_pattern s p1 in
-  let output = apply_pattern s p2 in
+  let s_min = minimise ty in
+  let ty_min = apply s_min ty in
+  let s = Subst.compose s_min s in
+  let def = List.map (apply_subst_eq s) eqs in
 
-  let lenv' = Env.add lenv name (generalize Env.empty ty) in
+  let name = step.pstep_name.txt in
+  let input = apply_subst_pat s p1 in
+  let output = apply_subst_pat s p2 in
+
+  let lenv' = Env.add lenv name (generalize Env.empty ty_min) in
 
   (lenv', Ttree_builder.step name input output def) |> ok
 
@@ -344,21 +356,20 @@ let ty_item genv lenv item =
   | Ppack_node _ -> failwith "not yet implemented"
   | Ppack_link _ -> failwith "not yet implemented"
 
-let ty_pack genv pack : (Env.t Map.String.t * Ttree.t) Reserr.t =
+let ty_pack genv pack : (Env.t String.Map.t * Ttree.t) Reserr.t =
   let name = pack.ppack_name.txt in
   let items = pack.ppack_items in
-  let* lenv, pack' =
+  let* lenv, items =
     fold_left
       (fun (lenv, items) item ->
         let* lenv', item' = ty_item genv lenv item in
         (lenv', item' :: items) |> ok)
       (Env.empty, []) items
   in
-  let genv = Map.String.add name lenv genv in
-  (genv, List.rev pack') |> ok
+  let genv = String.Map.add name lenv genv in
+  let pack = package name (List.rev items) in
+  (genv, pack) |> ok
 
-open Dependency
-
-let f (d : Ptree.t Tree.t) : Ttree.t Tree.t Reserr.t =
-  let* _, d' = Tree.fold_left_map ty_pack Map.String.empty d in
+let f (d : Ptree.t list) : Ttree.t list Reserr.t =
+  let* _, d' = fold_left_map ty_pack String.Map.empty d in
   d' |> ok

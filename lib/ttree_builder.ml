@@ -1,5 +1,4 @@
 open Ttree
-open Typing
 open Type
 
 let mk_pat pat_desc pat_ty = { pat_desc; pat_ty }
@@ -55,3 +54,5 @@ let esome e =
 
 let step step_name step_input step_output step_def =
   Step { step_name; step_input; step_output; step_def }
+
+let package pack_name pack_items = { pack_name; pack_items }

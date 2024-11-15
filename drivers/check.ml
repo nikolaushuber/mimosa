@@ -7,9 +7,9 @@ let main files =
     (fun _ _ -> ())
     Fmt.stdout
     (map Parse.f files
-    >>= map Eq_ordering.f
     >>= Dependency.f
-    >>= Dependency.Tree.map Step_ordering.f
+    >>= Eq_ordering.f
+    >>= Step_ordering.f
     >>= Typecheck.f)
 
 let term = Term.(const main $ Args.files)

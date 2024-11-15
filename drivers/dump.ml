@@ -15,12 +15,10 @@ let ptree =
 let main_pack_dep files =
   let open Reserr in
   let open Fmt in
-  pp false
-    (Dependency.Tree.pp string)
-    stdout
+  pp false (list string) stdout
     (map Parse.f files
     >>= Dependency.f
-    >>= Dependency.Tree.map (fun p -> p.Ptree.ppack_name.txt |> ok))
+    >>= map (fun p -> p.Ptree.ppack_name.txt |> ok))
 
 let packdep =
   Cmd.(
@@ -32,7 +30,7 @@ let main_eqorder files =
   let open Reserr in
   let open Fmt in
   pp false (list Ptree_printer.pp) stdout
-    (map Parse.f files >>= map Eq_ordering.f)
+    (map Parse.f files >>= Dependency.f >>= Eq_ordering.f)
 
 let eqorder =
   Cmd.(
@@ -43,13 +41,11 @@ let eqorder =
 let main_dump_ttree files =
   let open Reserr in
   let open Fmt in
-  pp false
-    (Dependency.Tree.pp Ttree_printer.pp)
-    stdout
+  pp false (list Ttree_printer.pp) stdout
     (map Parse.f files
-    >>= map Eq_ordering.f
     >>= Dependency.f
-    >>= Dependency.Tree.map Step_ordering.f
+    >>= Eq_ordering.f
+    >>= Step_ordering.f
     >>= Typecheck.f)
 
 let ttree =
@@ -58,8 +54,25 @@ let ttree =
       (info "ttree" ~doc:"Dump AST after type checking.")
       Term.(const main_dump_ttree $ Args.files))
 
+let main_mono files =
+  let open Reserr in
+  let open Fmt in
+  pp false (list Ttree_printer.pp) stdout
+    (map Parse.f files
+    >>= Dependency.f
+    >>= Eq_ordering.f
+    >>= Step_ordering.f
+    >>= Typecheck.f
+    >>= Monomorphise.f)
+
+let mono =
+  Cmd.(
+    v
+      (info "mono" ~doc:"Dump AST after monomorphisation.")
+      Term.(const main_mono $ Args.files))
+
 let cmd =
   let doc = "Dump tool for debugging information." in
   let info = Cmd.info "dump" ~doc in
-  let cmds = [ ptree; packdep; eqorder; ttree ] in
+  let cmds = [ ptree; packdep; eqorder; ttree; mono ] in
   Cmd.group info cmds

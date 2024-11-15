@@ -90,11 +90,7 @@ and sexp_of_expr_desc = function
       let e' = sexp_of_expression e in
       List [ Atom "if"; i'; t'; e' ]
   | Pexpr_apply (f, e) ->
-      let f' =
-        match f.txt with
-        | Lident.Lident name -> Atom name
-        | Ldot (pack, name) -> List [ Atom pack; Atom name ]
-      in
+      let f' = sexp_of_expression f in
       let e' = sexp_of_expression e in
       List [ f'; e' ]
   | Pexpr_match (e, cases) ->

@@ -136,7 +136,9 @@ let order_item item =
   in
   { item with ppack_item = item' } |> ok
 
-let f p =
+let order_pack p =
   let open Reserr in
   let* ppack_items' = map order_item p.ppack_items in
   { p with ppack_items = ppack_items' } |> ok
+
+let f d = Reserr.map order_pack d

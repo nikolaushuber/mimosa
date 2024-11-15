@@ -7,6 +7,11 @@ let error x = (Result.error [ x ], [])
 let warns xs = (Result.ok (), xs)
 let warn x = warns [ x ]
 
+let get (res, _) =
+  match res with
+  | Result.Ok x -> x
+  | Error _ -> failwith "[get] on error case"
+
 let ( let* ) x f =
   match x with
   | Ok v, w1 ->
@@ -61,6 +66,28 @@ let rec fold_left f acc = function
   | x :: xs ->
       let* acc = f acc x in
       fold_left f acc xs
+
+let fold_right f l acc = fold_left (Fun.flip f) acc (List.rev l)
+
+let fold_left_map f acc l =
+  let* acc, b =
+    fold_left
+      (fun (acc, items) item ->
+        let* acc, b = f acc item in
+        (acc, b :: items) |> ok)
+      (acc, []) l
+  in
+  (acc, List.rev b) |> ok
+
+let fold_right_map f l acc =
+  let* b, acc =
+    fold_right
+      (fun item (items, acc) ->
+        let* b, acc = f item acc in
+        (b :: items, acc) |> ok)
+      l ([], acc)
+  in
+  (List.rev b, acc) |> ok
 
 open Fmt
 
