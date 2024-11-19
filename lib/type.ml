@@ -254,27 +254,15 @@ end
 include Type
 
 module Set = struct
-  include Set.Make (struct
-    type nonrec t = t
+  type nonrec t = t
 
-    let compare = Stdlib.compare
-  end)
+  let compare = Stdlib.compare
+  let pp = Type.pp
 end
 
-module Map = struct
-  include Map.Make (struct
-    type nonrec t = t
+module Map = Map.Make (struct
+  type nonrec t = t
 
-    let compare = Stdlib.compare
-  end)
-
-  let pp pp_v ppf map =
-    let open Fmt in
-    let l = to_list map in
-    pf ppf "%a"
-      (list ~sep:comma
-         (pair
-            ~sep:(fun ppf _ -> Format.pp_print_string ppf " => ")
-            Type.pp pp_v))
-      l
-end
+  let compare = Stdlib.compare
+  let pp = Type.pp
+end)

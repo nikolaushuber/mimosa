@@ -356,7 +356,7 @@ let ty_item genv lenv item =
   | Ppack_node _ -> failwith "not yet implemented"
   | Ppack_link _ -> failwith "not yet implemented"
 
-let ty_pack genv pack : (Env.t String.Map.t * Ttree.t) Reserr.t =
+let ty_pack genv pack =
   let name = pack.ppack_name.txt in
   let items = pack.ppack_items in
   let* lenv, items =

@@ -1,7 +1,6 @@
 open Reserr
 open Ttree
 
-
 module Cache = struct
   type t = string Type.Map.t String.Map.t
 
@@ -149,7 +148,8 @@ let trans_step step ((_, lcache) as acc) =
   let acc', steps' = List.fold_left_map cache_step acc steps in
   (List.map (fun s -> Step s) steps', acc') |> ok
 
-let trans_item item acc = match item with
+let trans_item item acc =
+  match item with
   | Step s -> trans_step s acc
 
 let trans_pack pack gcache =
@@ -158,7 +158,7 @@ let trans_pack pack gcache =
     | Some cache -> cache
     | None -> Cache.empty
   in
-  let cache = gcache, lcache in 
+  let cache = (gcache, lcache) in
   let* items', (_, lcache') = fold_right_map trans_item pack.pack_items cache in
   let gcache' = String.Map.add pack.pack_name lcache' gcache in
   ({ pack with pack_items = List.concat (List.rev items') }, gcache') |> ok
