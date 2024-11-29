@@ -2,7 +2,7 @@ package Mono
 
 step id (a : (bool * bool)) --> (b : (bool * bool))
 {
-  b : (bool * bool) = a_2
+  b : (bool * bool) = a
 }
 
 step id_1 (a : (bool * (bool * bool))) --> (b : (bool * (bool * bool)))
@@ -12,51 +12,50 @@ step id_1 (a : (bool * (bool * bool))) --> (b : (bool * (bool * bool)))
 
 step id_2 (a : (int * int)) --> (b : (int * int))
 {
-  b : (int * int) = a_1
+  b : (int * int) = a
 }
 
 step fst_1 (a : (bool * bool)) --> (b : bool)
 {
-  b : bool, _ : bool = (id) (a_2)
+  b : bool, _ : bool = id (a)
 }
 
 step fst (a : (bool * (bool * bool))) --> (b : bool)
 {
-  b : bool, _ : (bool * bool) = (id_1) (a)
+  b : bool, _ : (bool * bool) = id_1 (a)
 }
 
 step fst_2 (a : (int * int)) --> (b : int)
 {
-  b : int, _ : int = (id_2) (a_1)
+  b : int, _ : int = id_2 (a)
 }
 
 step snd_1 (a : (bool * bool)) --> (b : bool)
 {
-  _ : bool, b : bool = (id) (a_2)
+  _ : bool, b : bool = id (a)
 }
 
 step snd (a : (bool * (bool * bool))) --> (b : (bool * bool))
 {
-  _ : bool, b : (bool * bool) = (id_1) (a)
+  _ : bool, b : (bool * bool) = id_1 (a)
 }
 
 step snd_2 (a : (int * int)) --> (b : int)
 {
-  _ : int, b : int = (id_2) (a_1)
+  _ : int, b : int = id_2 (a)
 }
 
 step if_tup (c : bool, t : (bool * bool)) --> (o : bool)
 {
-  o : bool = if c then (fst_1) (t) else (snd_1) (t)
+  o : bool = if c then fst_1 (t) else snd_1 (t)
 }
 
 step add (a : (int * int)) --> (b : int)
 {
-  b : int = (fst_2) (a_1) + (snd_2) (a_1)
+  b : int = fst_2 (a) + snd_2 (a)
 }
 
 step if_trip (a : (bool * (bool * bool))) --> (b : bool)
 {
-  b : bool =
-    if (fst) (a) then (fst_1) ((id) ((snd) (a))) else (snd_1) ((snd) (a))
+  b : bool = if fst (a) then fst_1 (id (snd (a))) else snd_1 (snd (a))
 }

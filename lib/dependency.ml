@@ -1,4 +1,7 @@
-(* Resolves depedency between packages *)
+(** Package ordering * * This pass orders a list of packages according to their
+    mutual dependencies. * Cyclic dependencies between packages are reported as
+    an error. *)
+
 open Ptree
 
 (* For now we don't have enums *)

@@ -63,7 +63,7 @@ let rec pp_expr ppf expr =
   | EIf (c, t, e) ->
       pf ppf "@[if@;<1 2>%a@;<1 0>then@;<1 2>%a@;<1 0>else@;<1 2>%a@;<0 0>@]"
         pp_expr c pp_expr t pp_expr e
-  | EApp (e1, e2) -> pf ppf "(%a)@ (%a)" pp_expr e1 pp_expr e2
+  | EApp (e1, e2) -> pf ppf "%a@ (%a)" pp_expr e1 pp_expr e2
   | EMatch _ -> failwith "not yet implemented"
   | EArrow (e1, e2) -> pf ppf "@[%a@ -> %a@]" pp_expr e1 pp_expr e2
   | EFby (e1, e2) -> pf ppf "@[%a@ fby %a@]" pp_expr e1 pp_expr e2

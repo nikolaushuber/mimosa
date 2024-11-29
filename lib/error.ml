@@ -5,6 +5,7 @@ type t =
   | Step_redefine of string * Location.t
   | Local_symbol_redef of string * Location.t
   | Output_not_defined of string
+  | Output_any
   | Input_unused of string
   | Cycle_in_steps of string list
   | Cycle_in_equations of string list
@@ -40,6 +41,7 @@ let pp ppf = function
         ]
   | Output_not_defined name ->
       pf ppf "No equation found for output symbol %s" name
+  | Output_any -> text ppf "Cannot use _ pattern in output of step definition"
   | Input_unused name -> pf ppf "Input symbol %s unused" name
   | Cycle_in_steps names ->
       pf ppf "Dependency cycle between steps: @[%a@]" (list ~sep:comma string)

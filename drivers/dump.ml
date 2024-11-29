@@ -23,7 +23,7 @@ let main_pack_dep files =
 let packdep =
   Cmd.(
     v
-      (info "packdep" ~doc:"Dump package order after depedency resolution.")
+      (info "packdep" ~doc:"Dump package order after dependency resolution.")
       Term.(const main_pack_dep $ Args.files))
 
 let main_eqorder files =
@@ -71,8 +71,27 @@ let mono =
       (info "mono" ~doc:"Dump AST after monomorphisation.")
       Term.(const main_mono $ Args.files))
 
+let main_norm files =
+  let open Reserr in
+  let open Fmt in
+  (list Norm_printer.pp) stdout
+    (map Parse.f files
+    >>= Dependency.f
+    >>= Eq_ordering.f
+    >>= Step_ordering.f
+    >>= Typecheck.f
+    >>= Monomorphise.f
+    |> Reserr.unpack
+    |> List.map Normalise.f)
+
+let norm =
+  Cmd.(
+    v
+      (info "norm" ~doc:"Dump AST after normalisation.")
+      Term.(const main_norm $ Args.files))
+
 let cmd =
   let doc = "Dump tool for debugging information." in
   let info = Cmd.info "dump" ~doc in
-  let cmds = [ ptree; packdep; eqorder; ttree; mono ] in
+  let cmds = [ ptree; packdep; eqorder; ttree; mono; norm ] in
   Cmd.group info cmds

@@ -1,0 +1,4 @@
+File "unnamed_output.mim", line 1, characters 20-21
+1 | step test a --> (b, _)
+                        ^
+Error: Cannot use _ pattern in output of step definition

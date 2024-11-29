@@ -37,7 +37,7 @@ let rec ty_expr genv lenv expr state =
     | Pexpr_apply (f, e) -> ty_apply genv lenv f e state
     | Pexpr_arrow (e1, e2) -> ty_arrow genv lenv e1 e2 state
     | Pexpr_fby (e1, e2) -> ty_fby genv lenv e1 e2 state
-    | Pexpr_pre e -> ty_expr genv lenv e state
+    | Pexpr_pre e -> ty_pre genv lenv e state
     | Pexpr_match _ -> failwith "not yet implemented"
     | Pexpr_none -> ty_none state
     | Pexpr_some e -> ty_some genv lenv e state
@@ -180,6 +180,11 @@ and ty_apply genv lenv f e state =
   let ty = apply s3 (TVar n) in
   let exp' = eapply f' e' ty in
   (Subst.compose_list [ s3; s2; s1 ], ty, exp', state''') |> ok
+
+and ty_pre genv lenv e state =
+  let* s, ty, e', state' = ty_expr genv lenv e state in
+  let e'' = epre e' in
+  (s, ty, e'', state') |> ok
 
 and ty_arrow genv lenv e1 e2 state =
   let* s1, ty1, e1', state' = ty_expr genv lenv e1 state in

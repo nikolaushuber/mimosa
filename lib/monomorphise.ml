@@ -10,15 +10,18 @@ module Cache = struct
   let find_opt = String.Map.find_opt
 
   let get_name cache name ty =
-    match find_opt name cache with
-    | None -> (name, add name (Type.Map.singleton ty name) cache)
-    | Some map -> (
-        match Type.Map.find_opt ty map with
-        | None ->
-            let n = Type.Map.cardinal map in
-            let new_name = Format.asprintf "%s_%d" name n in
-            (new_name, add name (Type.Map.add ty new_name map) cache)
-        | Some n -> (n, cache))
+    match ty with
+    | Type.TFunc _ -> (
+        match find_opt name cache with
+        | None -> (name, add name (Type.Map.singleton ty name) cache)
+        | Some map -> (
+            match Type.Map.find_opt ty map with
+            | None ->
+                let n = Type.Map.cardinal map in
+                let new_name = Format.asprintf "%s_%d" name n in
+                (new_name, add name (Type.Map.add ty new_name map) cache)
+            | Some n -> (n, cache)))
+    | _ -> (name, cache)
 
   let pp : t Fmt.t =
     String.Map.pp

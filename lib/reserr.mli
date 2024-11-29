@@ -6,10 +6,10 @@ val ok : 'a -> 'a t
 val error : err -> 'a t
 val warns : warning list -> unit t
 val warn : warning -> unit t
-val get : 'a t -> 'a
 val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
 val ( and* ) : 'a t -> 'b t -> ('a * 'b) t
 val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
+val unpack : 'a t -> 'a
 
 val sequence : 'a t list -> 'a list t
 (** [sequence rs] returns [ok] of the list of ['a] iff there is no [error] in

@@ -1,4 +1,6 @@
-(* Equation ordering inside steps *)
+(** Equation ordering: This pass orders equations inside each step. Cyclic
+    dependencies are reported as errors if they don't go through at least one
+    shift operator. *)
 
 open Ptree
 
@@ -23,6 +25,16 @@ let vars_of_pat ?(init_map = String.Map.empty) =
     | Ppat_tuple pats -> Reserr.fold_left aux acc pats
   in
   aux (String.Set.empty, init_map)
+
+let rec check_any_in_output pat =
+  let open Reserr in
+  match pat.ppat_desc with
+  | Ppat_unit | Ppat_var _ -> ok ()
+  | Ppat_tuple ps -> fold_left (fun () -> check_any_in_output) () ps
+  | Ppat_any ->
+      let loc = pat.ppat_loc in
+      let err = Error.Output_any in
+      error (err, loc)
 
 (* Returns the set of symbols used by an expression *)
 let vars_used_by_expr =
@@ -73,6 +85,9 @@ let order_step step =
 
   (* all defined symbols by the given equations *)
   let all_defs = List.fold_left String.Set.union String.Set.empty defs in
+
+  (* does the output use any patterns? *)
+  let* _ = check_any_in_output step.pstep_output in
 
   (* Are all outputs defined? *)
   let missing_outs = String.Set.diff out_set all_defs in

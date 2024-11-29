@@ -7,11 +7,6 @@ let error x = (Result.error [ x ], [])
 let warns xs = (Result.ok (), xs)
 let warn x = warns [ x ]
 
-let get (res, _) =
-  match res with
-  | Result.Ok x -> x
-  | Error _ -> failwith "[get] on error case"
-
 let ( let* ) x f =
   match x with
   | Ok v, w1 ->
@@ -89,9 +84,8 @@ let fold_right_map f l acc =
   in
   (List.rev b, acc) |> ok
 
-open Fmt
-
 let pp_loc ppf loc =
+  let open Fmt in
   if Location.is_none loc then ()
   else
     let file = loc.Location.loc_start.pos_fname in
@@ -106,11 +100,14 @@ let pp_loc ppf loc =
       ]
 
 let pp_err ppf (err, loc) =
+  let open Fmt in
   pf ppf "%a@[%a: %a@]" pp_loc loc (styled `Bold string) "Error" Error.pp err
 
 let pp_warn _ _ = ()
 
-let pp quiet pp_ok ppf = function
+let pp quiet pp_ok ppf =
+  let open Fmt in
+  function
   | Ok x, w -> (
       pp_ok ppf x;
       if not quiet then
@@ -118,3 +115,12 @@ let pp quiet pp_ok ppf = function
         | [] -> ()
         | ws -> pf stderr "%a" (list Warning.pp) ws)
   | Error es, w -> pf stderr "%a@;%a" (list pp_err) es (list pp_warn) w
+
+let unpack (res : 'a t) : 'a =
+  match res with
+  | Ok x, _ ->
+      pp false (fun _ _ -> ()) stderr res;
+      x
+  | _ ->
+      pp false (fun _ _ -> ()) stderr res;
+      exit 1
