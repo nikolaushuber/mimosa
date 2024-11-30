@@ -1,22 +1,25 @@
 package Norm
 
-step test2 (init_0 : bool, signal_1 : bool) =
-  let out_2 : bool =
-    let tmp_4 : bool =
-      let tmp_3 : bool = false in
-      tmp_3 fby signal_1
-    in
-    init_0 fby tmp_4
+step test2 (input_0 : (bool * bool)) =
+  init, signal = input_0
+  tmp_4 : bool = false
+  tmp_5 : bool = signal_2
+  tmp_6 : bool = init_1
+  tmp_7 : bool = tmp_4 fby tmp_5
+  out_3 : bool = tmp_6 fby tmp_7
   in
-  out_2
+  out_3
 
-step test (cond_0 : bool, init_1 : bool, signal_2 : bool, default_3 : bool) =
-  let out_4 : bool =
-    if cond_0 then
-      let tmp_6 : bool =
-        let tmp_5 : bool = false in
-        tmp_5 fby signal_2
-      in
-      init_1 fby tmp_6
-    else default_3 in
-  out_4
+step test (input_0 : (bool * bool * bool * bool)) =
+  cond, init, signal, default = input_0
+  tmp_6 : bool = cond_1
+  out_5 : bool = if tmp_6 then 
+                   tmp_7 : bool = false
+                   tmp_8 : bool = signal_3
+                   tmp_9 : bool = init_2
+                   tmp_10 : bool = tmp_7 fby tmp_8
+                   in
+                   tmp_9 fby tmp_10
+                 else default_4
+  in
+  out_5

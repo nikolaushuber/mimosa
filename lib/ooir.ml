@@ -1,11 +1,11 @@
 type param = string * Type.t
 
 type machine = {
+  name : string;
   memory : param list;
-  instances : (string * Ident.t) list;
+  instances : (string * Lident.t) list;
   reset : instr list;
   inputs : param list;
-  outputs : param list;
   locals : param list;
   def : instr list;
 }
@@ -13,11 +13,13 @@ type machine = {
 and instr =
   | Assign of string * expr
   | StateAssign of string * expr
-  | TupleConstr of string * expr list
+  | TupleConstr of string * string list
   | TupleDestr of string list * string
-  | Reset of Ident.t * string
-  | StepApp of string option * Ident.t * expr list * string option
-  | Switch of expr * (string * instr list) list
+  | Reset of Lident.t * string
+  | Return of string
+  | If of string * instr list * instr list
+  | StepApp of string option * Lident.t * string list * string
+  | Either of string * instr list
 
 and expr = { expr_desc : expr_desc; expr_ty : Type.t }
 
@@ -25,8 +27,11 @@ and expr_desc =
   | Var of string
   | StateVar of string
   | Const of Ttree.const
+  | GlobalConst of Lident.t
   | None
-  | Some of expr
-  | UnOp of Ttree.unop * expr
-  | BinOp of Ttree.binop * expr * expr
-  | If of expr * expr * expr
+  | Some of string
+  | UnOp of Ttree.unop * string
+  | BinOp of Ttree.binop * string * string
+
+type item = Machine of machine
+type t = Package of string * item list

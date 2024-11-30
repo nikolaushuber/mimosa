@@ -90,8 +90,26 @@ let norm =
       (info "norm" ~doc:"Dump AST after normalisation.")
       Term.(const main_norm $ Args.files))
 
+let main_ooir files =
+  let open Reserr in
+  let open Fmt in
+  (list Ooir_printer.pp) stdout
+    (map Parse.f files
+    >>= Dependency.f
+    >>= Eq_ordering.f
+    >>= Step_ordering.f
+    >>= Typecheck.f
+    >>= Monomorphise.f
+    |> Reserr.unpack
+    |> List.map Normalise.f
+    |> List.map Objectify.f)
+
+let ooir =
+  Cmd.(
+    v (info "ooir" ~doc:"Dump object IR.") Term.(const main_ooir $ Args.files))
+
 let cmd =
   let doc = "Dump tool for debugging information." in
   let info = Cmd.info "dump" ~doc in
-  let cmds = [ ptree; packdep; eqorder; ttree; mono; norm ] in
+  let cmds = [ ptree; packdep; eqorder; ttree; mono; norm; ooir ] in
   Cmd.group info cmds

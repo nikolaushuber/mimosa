@@ -1,25 +1,31 @@
+type pattern = { pat_desc : pat_desc; pat_ty : Type.t }
 (** k-normal form *)
 
-type pattern =
-  | PAny of Type.t
-  | PUnit
-  | PVar of Type.t * string
-  | PTuple of pattern list
+and pat_desc = PAny | PUnit | PVar of string | PTuple of string list
 
-type expr =
+type base_expr = { base_expr_desc : base_expr_desc; base_expr_ty : Type.t }
+
+and base_expr_desc =
   | EConst of Ttree.const
-  | EVar of Lident.t
+  | EVar of string
+  | EGlobalVar of Lident.t
   | EUnOp of Ttree.unop * string
   | EBinOp of Ttree.binop * string * string
-  | EEither of string * expr
-  | ETuple of string list
-  | EIf of string * expr * expr
-  | EApp of Lident.t * string
-  | EFby of string * expr
   | ENone
   | ESome of string
-  | ELet of pattern * expr * expr
 
-type step = string * pattern * expr
+type expr = { expr_desc : expr_desc; expr_ty : Type.t }
+
+and expr_desc =
+  | EBase of base_expr
+  | EEither of string * block
+  | EIf of string * block * block
+  | EApp of Lident.t * string
+  | EFby of string * block
+  | ETuple of string list
+
+and block = (pattern * expr) list * base_expr
+
+type step = string * pattern * block * int
 type item = Step of step
 type t = Package of string * item list
