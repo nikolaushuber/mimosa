@@ -60,7 +60,7 @@ and pp_block ppf (l, e) =
   | [] -> pp_base_expr ppf e
   | l -> pf ppf "@[<v 2>%a@;<1 -2>in %a@]" pp_eqs l pp_base_expr e
 
-let pp_step ppf (name, input, e, _) =
+let pp_step ppf (name, input, _, e, _) =
   pf ppf "@[<2>step@ %s@ (%a)@ %a@]@\n" name pp_pattern input pp_block e
 
 let pp_item ppf = function

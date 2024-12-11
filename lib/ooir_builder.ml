@@ -23,7 +23,7 @@ let eunop op e ty = expr (UnOp (op, e)) ty
 let ebinop op e1 e2 ty = expr (BinOp (op, e1, e2)) ty
 let param name ty = (name, ty)
 
-let machine name inputs locals memory instances reset def =
-  Machine { name; inputs; locals; memory; instances; reset; def }
+let machine name inputs locals memory instances reset ret self def =
+  Machine { name; inputs; locals; memory; instances; reset; ret; self; def }
 
 let package name items = Package (name, items)

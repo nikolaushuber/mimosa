@@ -29,5 +29,5 @@ let efby e1 e2 = expr (EFby (e1, e2))
 let enone ty = expr (EBase (base_none ty)) ty
 let esome e ty = expr (EBase (base_some e ty)) ty
 let block vb e : block = (vb, e)
-let step name inp e state = Step (name, inp, e, state)
+let step name inp ret_ty e state = Step (name, inp, ret_ty, e, state)
 let package name items = Package (name, items)

@@ -99,14 +99,15 @@ let trans_param pat =
       in
       List.map2 param vs tys
 
-let trans_step (name, input, def, state) =
+let trans_step (name, input, ret_ty, def, state) =
   counter := state;
   let eqs, ret = def in
   let m, si, j, s = List.fold_left trans_eq ([], [], [], []) eqs in
   let ret_var = new_var ~prefix:"return_val" () in
   let inputs = trans_param input in
+  let self = new_var ~prefix:"self" () in
   let s' = s @ [ assign ret_var (trans_expr m ret); return ret_var ] in
-  machine name inputs [] m j si s'
+  machine name inputs [] m j si ret_ty self s'
 
 let trans_item = function
   | Step s -> trans_step s

@@ -7,7 +7,9 @@ type machine = {
   reset : instr list;
   inputs : param list;
   locals : param list;
+  ret : Type.t;
   def : instr list;
+  self : string;
 }
 
 and instr =

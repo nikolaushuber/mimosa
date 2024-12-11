@@ -206,7 +206,9 @@ let trans_step { step_name; step_input; step_output; step_def } =
   let map', def' = List.fold_left_map trans_equation map step_def in
   let eqs', output = trans_output map' step_output in
   let body = (input_eqs @ List.flatten def' @ eqs', output) in
-  step step_name (pvar in_var step_input.pat_ty) body !counter
+  step step_name
+    (pvar in_var step_input.pat_ty)
+    step_output.pat_ty body !counter
 
 let trans_item = function
   | Step s -> trans_step s

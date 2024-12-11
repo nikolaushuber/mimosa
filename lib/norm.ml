@@ -26,6 +26,6 @@ and expr_desc =
 
 and block = (pattern * expr) list * base_expr
 
-type step = string * pattern * block * int
+type step = string * pattern * Type.t * block * int
 type item = Step of step
 type t = Package of string * item list

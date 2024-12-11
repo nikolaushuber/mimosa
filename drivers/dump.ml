@@ -108,8 +108,25 @@ let ooir =
   Cmd.(
     v (info "ooir" ~doc:"Dump object IR.") Term.(const main_ooir $ Args.files))
 
+let main_c files =
+  let open Reserr in
+  let open Fmt in
+  (list C_printer.pp) stdout
+    (map Parse.f files
+    >>= Dependency.f
+    >>= Eq_ordering.f
+    >>= Step_ordering.f
+    >>= Typecheck.f
+    >>= Monomorphise.f
+    |> Reserr.unpack
+    |> List.map Normalise.f
+    |> List.map Objectify.f
+    |> List.map Ccomp.f)
+
+let c = Cmd.(v (info "c" ~doc:"Dump C code.") Term.(const main_c $ Args.files))
+
 let cmd =
   let doc = "Dump tool for debugging information." in
   let info = Cmd.info "dump" ~doc in
-  let cmds = [ ptree; packdep; eqorder; ttree; mono; norm; ooir ] in
+  let cmds = [ ptree; packdep; eqorder; ttree; mono; norm; ooir; c ] in
   Cmd.group info cmds
