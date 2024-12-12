@@ -33,24 +33,24 @@ let rec trans_eq (m, si, j, s) (lhs, rhs) =
   | PVar v, ETuple es -> (m, si, j, s @ [ tuple_constr v es ])
   | PVar v, EIf (c, t, e) ->
       let eqs1, e1 = t in
-      let m', si_t, j', s_t = List.fold_left trans_eq (m, [], j, []) eqs1 in
-      let t' = si_t @ s_t @ [ assign v (trans_expr m' e1) ] in
+      let m', si', j', s_t = List.fold_left trans_eq (m, si, j, []) eqs1 in
+      let t' = s_t @ [ assign v (trans_expr m' e1) ] in
       let eqs2, e2 = e in
-      let m'', si_e, j'', s_e = List.fold_left trans_eq (m', [], j', []) eqs2 in
-      let e' = si_e @ s_e @ [ assign v (trans_expr m'' e2) ] in
+      let m'', si'', j'', s_e =
+        List.fold_left trans_eq (m', si', j', []) eqs2
+      in
+      let e' = s_e @ [ assign v (trans_expr m'' e2) ] in
       let if_instr = if_ c t' e' in
-      (m'', si, j'', s @ [ if_instr ])
+      (m'', si'', j'', s @ [ if_instr ])
   | PVar v, EFby (e1, (eqs, e2)) ->
       let first = new_var ~prefix:"first" () in
-      let m', si_e2, j', s_e2 =
-        List.fold_left trans_eq (m, [], j, [])
+      let m', si', j', s_e2 =
+        List.fold_left trans_eq (m, si, j, [])
           (eqs @ [ (lhs, Norm_builder.base_expr e2) ])
       in
-      let if_instr =
-        if_ first [ assign v (evar e1 rhs.expr_ty) ] (si_e2 @ s_e2)
-      in
+      let if_instr = if_ first [ assign v (evar e1 rhs.expr_ty) ] s_e2 in
       ( (first, Type.TBool) :: m',
-        state_assign first (ebool true) :: si_e2,
+        state_assign first (ebool true) :: si',
         j',
         [ if_instr; state_assign first (ebool false) ] )
   | ((PVar _ | PUnit | PAny) as eq_lhs), EApp (f, a) ->
