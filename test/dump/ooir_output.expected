@@ -3,9 +3,17 @@ package Ooir
 machine test2
 memory: first_12 : bool, first_11 : bool
 instances: 
-reset: first_12 := true
+reset: first_12 := true; first_11 := true
 inputs: input_0 : (bool * bool)
 body:
+  tmp_10 = input_0;
+  init_1, signal_2 = tmp_10;
+  tmp_4 = false;
+  tmp_5 = signal_2;
+  if first_11 then tmp_6 = tmp_4 else tmp_6 = tmp_5;
+  first_11 := false;
+  tmp_7 = init_1;
+  tmp_8 = tmp_6;
   if first_12 then tmp_9 = tmp_7 else tmp_9 = tmp_8;
   first_12 := false;
   out_3 = tmp_9;
@@ -15,14 +23,16 @@ body:
 machine test
 memory: first_16 : bool, first_15 : bool
 instances: 
-reset: 
+reset: first_16 := true; first_15 := true
 inputs: input_0 : (bool * bool * bool * bool)
 body:
   tmp_14 = input_0;
-  cond, init, signal, default = tmp_14;
+  cond_1, init_2, signal_3, default_4 = tmp_14;
   tmp_6 = cond_1;
   if tmp_6
-  then first_16 := true;
+  then tmp_7 = false; tmp_8 = signal_3;
+      if first_15 then tmp_9 = tmp_7 else tmp_9 = tmp_8; first_15 := false;
+      tmp_10 = init_2; tmp_11 = tmp_9;
       if first_16 then tmp_12 = tmp_10 else tmp_12 = tmp_11;
       first_16 := false; tmp_13 = tmp_12
   else tmp_13 = default_4;

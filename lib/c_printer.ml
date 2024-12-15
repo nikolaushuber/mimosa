@@ -1,6 +1,11 @@
 open C_ast
 open Fmt
 
+let list ?(sep = cut) ?(suffix = nop) pp_v ppf v =
+  match v with
+  | [] -> ()
+  | v -> pf ppf "%a%a" (list ~sep pp_v) v suffix ()
+
 let rec pp_type ppf = function
   | TVoid -> string ppf "void"
   | TInt -> string ppf "int"
@@ -111,8 +116,8 @@ let pp_global ppf = function
       pf ppf "@[<v2>@[<hv2>enum@;%s@]@;<0 -2>{@;%a@;<0 -2>};@]" name
         (list ~sep:semi string) vals
   | GStruct (name, fields) ->
-      pf ppf "@[<v2>@[<hv2>struct@;%s@]@;<0 -2>{@;%a@;<0 -2>}@]" name
-        (list ~sep:semi pp_param) fields
+      pf ppf "@[<v2>@[<hv2>struct@;%s@]@;<0 -2>{@;%a@;<0 -2>};@]" name
+        (list ~sep:semi ~suffix:(fun ppf _ -> pf ppf ";") pp_param) fields
   | GFunc (name, args, ty, body) ->
       pf ppf "@[<v2>@[<hov 2>%a %s (%a)@]@;<0 -2>{@;%a@;<0 -2>}@]" pp_type ty
         name (list ~sep:comma pp_param) args (list ~sep:cut pp_stmt) body

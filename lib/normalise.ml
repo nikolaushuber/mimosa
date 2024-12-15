@@ -161,7 +161,7 @@ let trans_pattern map pat =
             (map, acc @ [ x ], eqs)
         | PVar v ->
             let v' = new_var ~prefix:v () in
-            ((v, v') :: map, acc @ [ v ], eqs)
+            ((v, v') :: map, acc @ [ v' ], eqs)
         | PTuple ps -> List.fold_left aux (map, acc, eqs) ps
       in
       let map', r, eqs = List.fold_left aux (map, [], []) ps in

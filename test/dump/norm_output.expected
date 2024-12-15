@@ -1,7 +1,7 @@
 package Norm
 
 step test2 (input_0 : (bool * bool))
-  init : bool, signal : bool = input_0
+  init_1 : bool, signal_2 : bool = input_0
   tmp_4 : bool = false
   tmp_5 : bool = signal_2
   tmp_6 : bool = tmp_4 fby tmp_5
@@ -12,7 +12,7 @@ step test2 (input_0 : (bool * bool))
   in out_3
 
 step test (input_0 : (bool * bool * bool * bool))
-  cond : bool, init : bool, signal : bool, default : bool = input_0
+  cond_1 : bool, init_2 : bool, signal_3 : bool, default_4 : bool = input_0
   tmp_6 : bool = cond_1
   tmp_13 : bool =
     if tmp_6

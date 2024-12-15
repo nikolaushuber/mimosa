@@ -1,0 +1,19 @@
+step add (a, b) --> c
+{
+    c = a + b;
+}
+
+step if_ (c, t, e) --> r
+{
+    r = if c then t else e;
+}
+
+step fst a --> b
+{
+    b, _ = a;
+}
+
+step fby_ (init, signal) --> r
+{
+    r = init fby signal;
+}

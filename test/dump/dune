@@ -98,3 +98,17 @@
  (action
   (progn
    (diff ooir_output.expected ooir_output))))
+
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stdout-to
+   ccomp.c
+   (run mimosa dump c %{dep:ccomp.mim}))))
+
+(rule
+ (alias runtest)
+ (action
+  (progn
+   (diff ccomp.expected.c ccomp.c))))
