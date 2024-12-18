@@ -133,3 +133,18 @@
   (progn
    (diff unnamed_output_errors.expected unnamed_output_errors))))
 
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stderr-to
+   incorrect_type_1_errors
+   (run mimosa check %{dep:incorrect_type_1.mim}))))
+
+(rule
+ (alias runtest)
+ (package mimosa)
+ (action
+  (progn
+   (diff incorrect_type_1_errors.expected incorrect_type_1_errors))))
+

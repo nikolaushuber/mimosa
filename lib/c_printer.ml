@@ -117,7 +117,8 @@ let pp_global ppf = function
         (list ~sep:semi string) vals
   | GStruct (name, fields) ->
       pf ppf "@[<v2>@[<hv2>struct@;%s@]@;<0 -2>{@;%a@;<0 -2>};@]" name
-        (list ~sep:semi ~suffix:(fun ppf _ -> pf ppf ";") pp_param) fields
+        (list ~sep:semi ~suffix:(fun ppf _ -> pf ppf ";") pp_param)
+        fields
   | GFunc (name, args, ty, body) ->
       pf ppf "@[<v2>@[<hov 2>%a %s (%a)@]@;<0 -2>{@;%a@;<0 -2>}@]" pp_type ty
         name (list ~sep:comma pp_param) args (list ~sep:cut pp_stmt) body

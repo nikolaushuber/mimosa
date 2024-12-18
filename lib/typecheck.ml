@@ -201,7 +201,7 @@ and ty_fby genv lenv e1 e2 state =
   let* s3 = unify ~loc:e2.pexpr_loc ty1 ty2 in
   let s = Subst.compose_list [ s3; s2; s1 ] in
   let ty = apply s ty2 in
-  let e' = earrow e1' e2' in
+  let e' = efby e1' e2' in
   (s, ty, e', state'') |> ok
 
 and ty_none state =

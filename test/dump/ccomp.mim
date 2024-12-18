@@ -17,3 +17,18 @@ step fby_ (init, signal) --> r
 {
     r = init fby signal;
 }
+
+step init_ (init, signal) --> r
+{
+    r = init -> signal;
+}
+
+step init_pre (init, signal) --> r
+{
+    r = init -> pre signal;
+}
+
+step opt_output (c, signal) --> r
+{
+    r = if c then Some signal else None;
+}

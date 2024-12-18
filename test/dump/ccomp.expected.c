@@ -1,3 +1,40 @@
+struct ccomp__init___state_t
+{
+  bool first_8;
+};
+
+void ccomp__init___reset (struct ccomp__init___state_t * self_10)
+{
+  self_10->first_8 = true;
+}
+
+bool ccomp__init___step (struct tup_bool_bool input_0,
+  struct ccomp__init___state_t * self_10)
+{
+  bool return_val_9;
+  bool r_3;
+  bool tmp_6;
+  bool tmp_5;
+  bool tmp_4;
+  struct tup_bool_bool tmp_7;
+  tmp_7 = input_0;
+  init_1 = tmp_7.val0;
+  signal_2 = tmp_7.val1;
+  tmp_4 = init_1;
+  tmp_5 = signal_2;
+  if (first_8)
+  {
+    tmp_6 = tmp_4;
+  } else
+  {
+    tmp_6 = tmp_5;
+  }
+  self_10->first_8 = false;
+  r_3 = tmp_6;
+  return_val_9 = r_3;
+  return return_val_9;
+}
+
 struct ccomp__if___state_t
 {
   
@@ -35,39 +72,125 @@ bool ccomp__if___step (struct tup_bool_bool_bool input_0,
 
 struct ccomp__fby___state_t
 {
-  bool first_8;
+  bool first_7;
 };
 
-void ccomp__fby___reset (struct ccomp__fby___state_t * self_10)
+void ccomp__fby___reset (struct ccomp__fby___state_t * self_9)
 {
-  self_10->first_8 = true;
+  self_9->first_7 = true;
 }
 
 bool ccomp__fby___step (struct tup_bool_bool input_0,
-  struct ccomp__fby___state_t * self_10)
+  struct ccomp__fby___state_t * self_9)
 {
-  bool return_val_9;
+  bool return_val_8;
   bool r_3;
-  bool tmp_6;
+  bool tmp_5;
+  bool tmp_4;
+  struct tup_bool_bool tmp_6;
+  tmp_6 = input_0;
+  init_1 = tmp_6.val0;
+  signal_2 = tmp_6.val1;
+  tmp_4 = init_1;
+  if (first_7)
+  {
+    tmp_5 = tmp_4;
+  } else
+  {
+    tmp_5 = signal_2;
+  }
+  self_9->first_7 = false;
+  r_3 = tmp_5;
+  return_val_8 = r_3;
+  return return_val_8;
+}
+
+struct ccomp__opt_output__state_t
+{
+  
+};
+
+void ccomp__opt_output__reset (struct ccomp__opt_output__state_t * self_9)
+{
+  
+}
+
+struct opt_bool ccomp__opt_output__step (struct tup_bool_bool input_0,
+  struct ccomp__opt_output__state_t * self_9)
+{
+  struct opt_bool return_val_8;
+  struct opt_bool r_3;
+  struct opt_bool tmp_6;
   bool tmp_5;
   bool tmp_4;
   struct tup_bool_bool tmp_7;
   tmp_7 = input_0;
-  init_1 = tmp_7.val0;
+  c_1 = tmp_7.val0;
   signal_2 = tmp_7.val1;
-  tmp_4 = init_1;
+  tmp_4 = c_1;
+  if (tmp_4)
+  {
+    tmp_5 = signal_2;
+    tmp_6 = some_opt_bool(tmp_5);
+  } else
+  {
+    tmp_6 = none_opt_bool();
+  }
+  r_3 = tmp_6;
+  return_val_8 = r_3;
+  return return_val_8;
+}
+
+struct ccomp__init_pre__state_t
+{
+  bool first_12;
+  bool first_11;
+};
+
+void ccomp__init_pre__reset (struct ccomp__init_pre__state_t * self_14)
+{
+  self_14->first_12 = true;
+  self_14->first_11 = true;
+}
+
+bool ccomp__init_pre__step (struct tup_bool_bool input_0,
+  struct ccomp__init_pre__state_t * self_14)
+{
+  bool return_val_13;
+  bool r_3;
+  bool tmp_9;
+  bool tmp_8;
+  bool tmp_7;
+  bool tmp_6;
+  bool tmp_5;
+  bool tmp_4;
+  struct tup_bool_bool tmp_10;
+  tmp_10 = input_0;
+  init_1 = tmp_10.val0;
+  signal_2 = tmp_10.val1;
+  tmp_4 = false;
   tmp_5 = signal_2;
-  if (first_8)
+  if (first_11)
   {
     tmp_6 = tmp_4;
   } else
   {
     tmp_6 = tmp_5;
   }
-  self_10->first_8 = false;
-  r_3 = tmp_6;
-  return_val_9 = r_3;
-  return return_val_9;
+  self_14->first_11 = false;
+  tmp_7 = init_1;
+  tmp_8 = tmp_6;
+  if (first_12)
+  {
+    tmp_9 = tmp_7;
+  } else
+  {
+    tmp_9 = tmp_8;
+  }
+  self_14->first_12 = false;
+  r_3 = tmp_9;
+  return_val_13 = r_3;
+  return return_val_13;
 }
 
 struct ccomp__add__state_t
