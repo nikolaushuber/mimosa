@@ -1,14 +1,3 @@
-module State = struct
-  type t = { next : int }
-
-  let init ?(n = 0) () = { next = n }
-
-  let next state =
-    let var = state.next in
-    let state = { next = state.next + 1 } in
-    (var, state)
-end
-
 module rec Type : sig
   type t =
     | TUnit
@@ -150,7 +139,7 @@ and Scheme : sig
 
   val ftv : t -> Int.Set.t
   val apply : Subst.t -> t -> t
-  val instantiate : t -> State.t -> Type.t * State.t
+  val instantiate : t -> int ref -> Type.t
   val pp : t Fmt.t
 end = struct
   type t = Int.Set.t * Type.t
@@ -165,13 +154,14 @@ end = struct
   let instantiate ts state =
     let vars, t = ts in
     let vars = Int.Set.to_list vars in
-    let aux state _ =
-      let n, state' = State.next state in
-      (state', Type.TVar n)
+    let aux _ =
+      let n = !state in
+      incr state;
+      Type.TVar n
     in
-    let state', nvars = List.fold_left_map aux state vars in
+    let nvars = List.map aux vars in
     let s = List.combine vars nvars |> Int.Map.of_list in
-    (Type.apply s t, state')
+    Type.apply s t
 
   let pp =
     let open Fmt in
