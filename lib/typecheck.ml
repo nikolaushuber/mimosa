@@ -242,7 +242,7 @@ let rec ty_core_type lenv map c =
   | Ptype_real -> (map, TReal)
 
 let rec ty_pattern lenv map p =
-  let get_ty p =
+  let get_ty map p =
     match p.ppat_ty with
     | Some t -> ty_core_type lenv map t
     | None ->
@@ -251,9 +251,12 @@ let rec ty_pattern lenv map p =
   in
   match p.ppat_desc with
   | Ppat_any ->
-      let map', ty = get_ty p in
-      (lenv, map', ty, pany ty)
-  | Ppat_unit -> (lenv, map, TUnit, punit)
+      let map', ty = get_ty map p in
+      (lenv, map', ty, pany ty) |> ok
+  | Ppat_unit ->
+      let map', ty = get_ty map p in
+      let* _ = unify ~loc:p.ppat_loc TUnit ty in
+      (lenv, map', TUnit, punit) |> ok
   | Ppat_var v ->
       let ty, lenv' =
         match Env.find_opt v.txt lenv with
@@ -266,21 +269,31 @@ let rec ty_pattern lenv map p =
             let lenv' = Env.add lenv v.txt (Int.Set.empty, ty) in
             (ty, lenv')
       in
-      (lenv', map, ty, pvar v.txt ty)
+      let map', spec_ty = get_ty map p in
+      let* s = unify ~loc:p.ppat_loc spec_ty ty in
+      let ty' = apply s ty in
+      let lenv'' = Env.apply s lenv' in
+      (lenv'', map', ty', pvar v.txt ty') |> ok
   | Ppat_tuple ps ->
-      let lenv', map', tys, pats =
-        List.fold_left
+      (* Because of the way we parse tuple patterns the type of the overall
+         pattern will always be None, i.e. the user cannot specify
+           a, b : int * int
+         but only
+           (a : int, b : int)
+      *)
+      let* lenv', map', tys, pats =
+        fold_left
           (fun (lenv, map, tys, pats) p ->
-            let lenv', map', ty, p' = ty_pattern lenv map p in
-            (lenv', map', ty :: tys, p' :: pats))
+            let* lenv', map', ty, p' = ty_pattern lenv map p in
+            (lenv', map', ty :: tys, p' :: pats) |> ok)
           (lenv, map, [], []) ps
       in
-      (lenv', map', TTuple (List.rev tys), ptuple (List.rev pats))
+      (lenv', map', TTuple (List.rev tys), ptuple (List.rev pats)) |> ok
 
 let ty_eq genv lenv map eq =
   let lhs, rhs = eq in
   let* s1, rhs_ty, rhs' = ty_expr genv lenv rhs in
-  let lenv', map', lhs_ty, lhs' = ty_pattern (Env.apply s1 lenv) map lhs in
+  let* lenv', map', lhs_ty, lhs' = ty_pattern (Env.apply s1 lenv) map lhs in
   let* s2 = unify ~loc:rhs.pexpr_loc lhs_ty rhs_ty in
   let eq' = (lhs', rhs') in
   let s = Subst.compose s2 s1 in
@@ -326,8 +339,10 @@ let apply_subst_eq s (lhs, rhs) = (apply_subst_pat s lhs, apply_subst_expr s rhs
 
 let ty_step genv lenv step =
   state := 0;
-  let lenv', map, ty1, p1 = ty_pattern lenv String.Map.empty step.pstep_input in
-  let lenv'', map', ty2, p2 = ty_pattern lenv' map step.pstep_output in
+  let* lenv', map, ty1, p1 =
+    ty_pattern lenv String.Map.empty step.pstep_input
+  in
+  let* lenv'', map', ty2, p2 = ty_pattern lenv' map step.pstep_output in
 
   let rec aux lenv map = function
     | [] -> (Subst.empty, []) |> ok

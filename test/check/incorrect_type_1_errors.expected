@@ -1,0 +1,8 @@
+File "incorrect_type_1.mim", line 3, characters 8-9
+3 |     c = a && b;
+            ^
+Error: This expression has type int, but an expression of type bool was expected
+File "incorrect_type_1.mim", line 3, characters 13-14
+3 |     c = a && b;
+                 ^
+Error: This expression has type int, but an expression of type bool was expected
