@@ -30,6 +30,10 @@ type stmt =
   | SAssign of lhs * expr
   | SReturn of expr
   | SIf of expr * stmt list * stmt list
+  | SSwitch of expr * case list
+
+and case = Case of case_pattern * stmt list
+and case_pattern = EnumCase of string
 
 type preproc =
   | PMacroApp of string * expr list

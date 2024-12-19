@@ -57,6 +57,12 @@ let rec trans_eq (m, l, si, j, s) (lhs, rhs) =
         state_assign first (ebool true) :: si',
         j',
         s @ [ if_instr; state_assign first (ebool false) ] )
+  | PVar v, EEither (e1, (eqs, e2)) ->
+      let m', l', si', j', s_e2 =
+        List.fold_left trans_eq (m, l, si, j, [])
+          (eqs @ [ (lhs, Norm_builder.base_expr e2) ])
+      in
+      (m', l', si', j', s @ [ either v e1 s_e2 ])
   | ((PVar _ | PUnit | PAny) as eq_lhs), EApp (f, a) ->
       let o = new_var ~prefix:"X" () in
       let lhs =

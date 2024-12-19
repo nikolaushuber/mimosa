@@ -34,7 +34,16 @@ let rec pp_instr ppf = function
   | StepApp (Some v, f, args, self) ->
       pf ppf "@[<2>%s@;=@;%a@;(@;%a,@ %s@;<1 -2>)@]" v Lident.pp f
         (list ~sep:comma string) args self
-  | Either _ -> failwith "not yet implemented"
+  | Either (lhs, e1, e2) ->
+      let pp_either ppf (lhs, e) =
+        pf ppf "@[<hov2>|@ Some %s:@]@;@[<hov2>%s@ =@ %s@]" e lhs e
+      in
+      let pp_or ppf e =
+        let pp_list = list ~sep:(fun ppf _ -> pf ppf ";@;<1 2>") pp_instr in
+        pf ppf "@[<hov2>|@ None:@]@;%a" pp_list e
+      in
+      pf ppf "@[<v2>@[<hov>case@ (%s)@ of@]@;<0 -2>%a@;<0 -2>%a@]" e1 pp_either
+        (lhs, e1) pp_or e2
 
 let pp_machine ppf m =
   pf ppf

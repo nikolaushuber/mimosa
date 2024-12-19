@@ -1,6 +1,6 @@
-type pattern = { pat_desc : pat_desc; pat_ty : Type.t }
 (** k-normal form *)
 
+type pattern = { pat_desc : pat_desc; pat_ty : Type.t }
 and pat_desc = PAny | PUnit | PVar of string | PTuple of string list
 
 type base_expr = { base_expr_desc : base_expr_desc; base_expr_ty : Type.t }

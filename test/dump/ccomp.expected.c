@@ -221,6 +221,42 @@ int ccomp__add__step (struct tup_int_int input_0,
   return return_val_7;
 }
 
+struct ccomp__opt_unpack__state_t
+{
+  
+};
+
+void ccomp__opt_unpack__reset (struct ccomp__opt_unpack__state_t * self_8)
+{
+  
+}
+
+bool ccomp__opt_unpack__step (struct tup_opt_bool_bool input_0,
+  struct ccomp__opt_unpack__state_t * self_8)
+{
+  bool return_val_7;
+  bool c_3;
+  bool tmp_5;
+  struct opt_bool tmp_4;
+  struct tup_opt_bool_bool tmp_6;
+  tmp_6 = input_0;
+  a_1 = tmp_6.val0;
+  b_2 = tmp_6.val1;
+  tmp_4 = a_1;
+  switch (tmp_4.tag)
+  {
+    case Some:
+      tmp_5 = tmp_4.expr;
+      break;
+    case None:
+      tmp_5 = b_2;
+      break;
+  }
+  c_3 = tmp_5;
+  return_val_7 = c_3;
+  return return_val_7;
+}
+
 struct ccomp__fst__state_t
 {
   

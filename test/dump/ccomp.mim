@@ -32,3 +32,8 @@ step opt_output (c, signal) --> r
 {
     r = if c then Some signal else None;
 }
+
+step opt_unpack (a, b) --> c
+{
+    c = either a or b;
+}

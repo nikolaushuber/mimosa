@@ -43,6 +43,9 @@ let stmt_var_def attrs ty v e = SVarDef (attrs, ty, v, e)
 let stmt_assign lhs e = SAssign (lhs, e)
 let stmt_return e = SReturn e
 let stmt_if c t e = SIf (c, t, e)
+let stmt_switch e cases = SSwitch (e, cases)
+let case_enum s = EnumCase s
+let case pat stmts = Case (pat, stmts)
 
 (* PREPROCESSOR DIRECTIVES *)
 let pre_macro_app name args = PMacroApp (name, args)

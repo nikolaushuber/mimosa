@@ -32,7 +32,9 @@ let rec pp_expr ppf e =
   match e.expr_desc with
   | EBase e -> pp_base_expr ppf e
   | EEither (e1, e2) ->
-      let fmt : (_, _, _) format = "@[<hv0>@[<2>either@ %s@];@[<2>or@ %a@]@]" in
+      let fmt : (_, _, _) format =
+        "@[<hv0>@[<2>either@ %s@]@ @[<2>or@ %a@]@]"
+      in
       pf ppf fmt e1 pp_block e2
   | EIf (c, t, e) ->
       let fmt : (_, _, _) format =

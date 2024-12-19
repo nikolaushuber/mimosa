@@ -21,7 +21,7 @@ and instr =
   | Return of string
   | If of string * instr list * instr list
   | StepApp of string option * Lident.t * string list * string
-  | Either of string * instr list
+  | Either of string * string * instr list
 
 and expr = { expr_desc : expr_desc; expr_ty : Type.t }
 

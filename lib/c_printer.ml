@@ -99,6 +99,16 @@ let rec pp_stmt ppf = function
          <0 -2>}@]"
       in
       pf ppf fmt pp_expr c (list pp_stmt) t (list pp_stmt) e
+  | SSwitch (e, cases) ->
+      pf ppf "@[<v2>@[<hov2>switch@ (%a)@]@;<0 -2>{@;%a@;<0 -2>}@]" pp_expr e
+        (list pp_case) cases
+
+and pp_case ppf (Case (pat, stmts)) =
+  pf ppf "@[<v2>@[<hov2>case@ %a:@]@;%a@;break;@]" pp_case_pattern pat
+    (list ~sep:cut pp_stmt) stmts
+
+and pp_case_pattern ppf = function
+  | EnumCase s -> string ppf s
 
 let pp_preproc ppf = function
   | PMacroApp (m, args) -> pf ppf "%s(%a)" m (list pp_expr) args

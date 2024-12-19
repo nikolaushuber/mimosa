@@ -96,7 +96,20 @@ let rec trans_instr self = function
       match lhs with
       | None -> [ stmt_expr (expr_call func args'') ]
       | Some lhs -> [ stmt_assign (lhs_var lhs) (expr_call func args'') ])
-  | Either _ -> failwith "not yet implemented"
+  | Either (lhs, e, default) ->
+      let pat_none = case_enum "None" in
+      let pat_some = case_enum "Some" in
+      let none_stmts = List.concat_map (trans_instr self) default in
+      let none_case = case pat_none none_stmts in
+      let some_stmts =
+        [ stmt_assign (lhs_var lhs) (expr_dot (expr_var e) (expr_var "expr")) ]
+      in
+      let some_case = case pat_some some_stmts in
+      [
+        stmt_switch
+          (expr_dot (expr_var e) (expr_var "tag"))
+          [ some_case; none_case ];
+      ]
 
 let trans_machine pack m =
   let ret_ty = trans_type m.ret in

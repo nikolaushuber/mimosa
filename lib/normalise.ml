@@ -62,7 +62,7 @@ let rec trans_expr map e : Norm.block =
             (pvar y e.expr_ty, eeither x block2 e.expr_ty);
           ]
       in
-      (eqs, base_var x e.expr_ty)
+      (eqs, base_var y e.expr_ty)
   | EIf (c, t, e) ->
       let eqs, c' = trans_expr map c in
       let x = new_var () in
