@@ -69,7 +69,7 @@ let pp_lhs ppf =
         let fmt : (_, _, _) format = if nested then "(%a->%a)" else "%a->%a" in
         pf ppf fmt (aux true) l1 (aux true) l2
     | LDot (l1, l2) ->
-        let fmt : (_, _, _) format = if nested then "(%a.%a)" else "%a->%a" in
+        let fmt : (_, _, _) format = if nested then "(%a.%a)" else "%a.%a" in
         pf ppf fmt (aux true) l1 (aux true) l2
   in
   aux false ppf
@@ -122,18 +122,21 @@ let pp_param ppf (name, ty) =
   pf ppf "@[<hov2>%a@]" (pair ~sep:sp pp_type string) (ty, name)
 
 let pp_global ppf = function
+  | GComment s -> pf ppf "@[/*@ %a@ */@]" text s
   | GEnum (name, vals) ->
       pf ppf "@[<v2>@[<hv2>enum@;%s@]@;<0 -2>{@;%a@;<0 -2>};@]" name
-        (list ~sep:semi string) vals
+        (list ~sep:comma string) vals
+  | GStructDecl name -> pf ppf "@[<hov2>struct@ %s;@]" name
   | GStruct (name, fields) ->
-      pf ppf "@[<v2>@[<hv2>struct@;%s@]@;<0 -2>{@;%a@;<0 -2>};@]" name
+      pf ppf "@[<v2>@[<hov2>struct@ %s@]@;<0 -2>{@;%a@;<0 -2>};@]" name
         (list ~sep:semi ~suffix:(fun ppf _ -> pf ppf ";") pp_param)
         fields
   | GFunc (name, args, ty, body) ->
       pf ppf "@[<v2>@[<hov 2>%a %s (%a)@]@;<0 -2>{@;%a@;<0 -2>}@]" pp_type ty
         name (list ~sep:comma pp_param) args (list ~sep:cut pp_stmt) body
   | GProto (name, tys, ret) ->
-      pf ppf "%a %s (%a);" pp_type ret name (list ~sep:comma pp_type) tys
+      pf ppf "@[<hov2>%a@ %s@ (%a);@]" pp_type ret name
+        (list ~sep:comma pp_type) tys
   | GVarDecl (attrs, ty, name) ->
       pf ppf "%a%a %s;" (list pp_attr) attrs pp_type ty name
   | GVarDef (attrs, ty, name, e) ->

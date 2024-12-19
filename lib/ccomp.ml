@@ -85,7 +85,8 @@ let rec trans_instr self = function
   | Return s -> [ stmt_return (expr_var s) ]
   | If (c, t, e) ->
       [
-        stmt_if (expr_var c)
+        stmt_if
+          (expr_var c)
           (List.concat_map (trans_instr self) t)
           (List.concat_map (trans_instr self) e);
       ]
@@ -102,7 +103,7 @@ let rec trans_instr self = function
       let none_stmts = List.concat_map (trans_instr self) default in
       let none_case = case pat_none none_stmts in
       let some_stmts =
-        [ stmt_assign (lhs_var lhs) (expr_dot (expr_var e) (expr_var "expr")) ]
+        [ stmt_assign (lhs_var lhs) (expr_dot (expr_var e) (expr_var "value")) ]
       in
       let some_case = case pat_some some_stmts in
       [
@@ -147,6 +148,156 @@ let trans_machine pack m =
 let trans_item pack = function
   | Machine m -> trans_machine pack m
 
-let f (Package (name, items)) : C_ast.t =
+let trans_pack (Package (name, items)) : C_ast.t =
   let lower_case_name = String.lowercase_ascii name in
   List.concat_map (trans_item lower_case_name) items
+
+let find_nested_tys tys =
+  let open Type in
+  let rec aux acc ty =
+    match ty with
+    | TBool | TInt | TReal | TUnit -> Set.add ty acc
+    | TOption t ->
+        let acc' = aux acc t in
+        Set.add ty acc'
+    | TTuple ts ->
+        let acc' = List.fold_left aux acc ts in
+        Set.add ty acc'
+    | TVar _ -> assert false
+    | TFunc _ -> assert false
+  in
+  List.fold_left aux Set.empty tys
+
+let tys_of_machine m =
+  let in_tys = List.map snd m.inputs in
+  let local_tys = List.map snd m.locals in
+  let ret_ty = m.ret in
+  find_nested_tys ((ret_ty :: in_tys) @ local_tys)
+
+let tys_of_item = function
+  | Machine m -> tys_of_machine m
+
+let tys_of_package (Package (_, items)) =
+  let open Type in
+  List.fold_left (fun acc i -> Set.union acc (tys_of_item i)) Set.empty items
+
+let get_all_types packs =
+  let open Type in
+  List.fold_left (fun acc p -> Set.union acc (tys_of_package p)) Set.empty packs
+
+let rec get_opt_depth : Type.t -> Type.t * int = function
+  | (TBool | TInt | TReal | TUnit | TTuple _) as t -> (t, 0)
+  | TOption t ->
+      let ty, n = get_opt_depth t in
+      (ty, n + 1)
+  | TVar _ | TFunc _ -> assert false
+
+let get_all_opts tys =
+  let open Type in
+  let opts =
+    Set.filter
+      (function
+        | TOption _ -> true
+        | _ -> false)
+      tys
+  in
+  Set.elements opts
+
+let rec gen_struct_name =
+  let open Type in
+  function
+  | TInt -> "int"
+  | TBool -> "bool"
+  | TReal -> "float"
+  | TOption t -> Format.asprintf "opt_%s" (gen_struct_name t)
+  | TTuple ts ->
+      Format.asprintf "tup_%s" (String.concat "_" (List.map gen_struct_name ts))
+  | _ -> assert false
+
+let gen_opts tys =
+  let tys = get_all_opts tys in
+  let aux (proto_acc, struct_acc) ty =
+    let base_ty =
+      match ty with
+      | Type.TOption t -> t
+      | _ -> assert false
+    in
+    let name = gen_struct_name ty in
+    let struct_decl = struct_decl name in
+    let struct_ =
+      struct_ name [ ("tag", tenum "opt_tag"); ("value", trans_type base_ty) ]
+    in
+    let some_proto, some_constr =
+      let ret_ty = tstruct name in
+      let val_ty = trans_type base_ty in
+      let func_name = Format.asprintf "some_%s" name in
+      ( proto func_name [ val_ty ] ret_ty,
+        func func_name
+          [ ("value", val_ty) ]
+          ret_ty
+          [
+            stmt_var_decl [] ret_ty "ret";
+            stmt_assign
+              (lhs_dot (lhs_var "ret") (lhs_var "tag"))
+              (expr_var "Some");
+            stmt_assign
+              (lhs_dot (lhs_var "ret") (lhs_var "value"))
+              (expr_var "value");
+            stmt_return (expr_var "ret");
+          ] )
+    in
+    let none_proto, none_constr =
+      let ret_ty = trans_type ty in
+      let func_name = Format.asprintf "none_%s" name in
+      ( proto func_name [] ret_ty,
+        func func_name [] ret_ty
+          [
+            stmt_var_decl [] ret_ty "ret";
+            stmt_assign
+              (lhs_dot (lhs_var "ret") (lhs_var "tag"))
+              (expr_var "None");
+            stmt_return (expr_var "ret");
+          ] )
+    in
+    ( struct_decl :: some_proto :: none_proto :: proto_acc,
+      struct_ :: some_constr :: none_constr :: struct_acc )
+  in
+  let protos, structs = List.fold_left aux ([], []) tys in
+  let tag_enum = enum "opt_tag" [ "None"; "Some" ] in
+  (protos, (tag_enum :: protos) @ structs)
+
+let get_all_tups tys =
+  Type.Set.filter
+    (function
+      | TTuple _ -> true
+      | _ -> false)
+    tys
+  |> Type.Set.elements
+
+let gen_tups tys =
+  let tys = get_all_tups tys in
+  List.fold_left
+    (fun (proto_acc, struct_acc) ty ->
+      let struct_tys =
+        match ty with
+        | Type.TTuple ts -> ts
+        | _ -> assert false
+      in
+      let fields =
+        List.mapi
+          (fun idx ty -> (Format.asprintf "val%d" idx, trans_type ty))
+          struct_tys
+      in
+      let name = gen_struct_name ty in
+      let decl = struct_decl name in
+      let struct_ = struct_ name fields in
+      (decl :: proto_acc, struct_ :: struct_acc))
+    ([], []) tys
+
+let f packs : C_ast.t =
+  let packs' = List.concat_map trans_pack packs in
+  let all_tys = get_all_types packs in
+  let opts_decl, opts_def = gen_opts all_tys in
+  let tup_decl, tup_def = gen_tups all_tys in
+  let imports = [ preproc (pre_include "stdbool.h") ] in
+  imports @ opts_decl @ tup_decl @ opts_def @ tup_def @ packs'

@@ -47,16 +47,18 @@ let rec trans_eq (m, l, si, j, s) (lhs, rhs) =
       (m'', (v, lhs.pat_ty) :: l'', si'', j'', s @ [ if_instr ])
   | PVar v, EFby (e1, (eqs, e2)) ->
       let first = new_var ~prefix:"first" () in
+      let tmp = new_var () in
       let m', l', si', j', s_e2 =
         List.fold_left trans_eq (m, l, si, j, [])
           (eqs @ [ (lhs, Norm_builder.base_expr e2) ])
       in
-      let if_instr = if_ first [ assign v (evar e1 rhs.expr_ty) ] s_e2 in
+      let cond_instr = assign tmp (estate_var first TBool) in
+      let if_instr = if_ tmp [ assign v (evar e1 rhs.expr_ty) ] s_e2 in
       ( (first, Type.TBool) :: m',
-        l',
+        (tmp, TBool) :: l',
         state_assign first (ebool true) :: si',
         j',
-        s @ [ if_instr; state_assign first (ebool false) ] )
+        s @ [ cond_instr; if_instr; state_assign first (ebool false) ] )
   | PVar v, EEither (e1, (eqs, e2)) ->
       let m', l', si', j', s_e2 =
         List.fold_left trans_eq (m, l, si, j, [])
@@ -88,10 +90,15 @@ let rec trans_eq (m, l, si, j, s) (lhs, rhs) =
       (m, List.combine ps tys @ l, si, j, s @ eqs)
   | PTuple ps, _ ->
       let var = new_var () in
+      let tys =
+        match lhs.pat_ty with
+        | TTuple tys -> tys
+        | _ -> assert false
+      in
       let m', l', si', j', s' =
         trans_eq (m, l, si, j, s) (Norm_builder.pvar var lhs.pat_ty, rhs)
       in
-      (m', l', si', j', s' @ [ tuple_destr ps var ])
+      (m', List.combine ps tys @ l', si', j', s' @ [ tuple_destr ps var ])
   | PVar v, EBase e ->
       (m, (v, lhs.pat_ty) :: l, si, j, s @ [ assign v (trans_expr m e) ])
   | _ -> assert false

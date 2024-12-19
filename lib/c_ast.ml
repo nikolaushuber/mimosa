@@ -44,7 +44,9 @@ type preproc =
   | PEndIf
 
 type global =
+  | GComment of string
   | GEnum of string * string list
+  | GStructDecl of string
   | GStruct of string * (string * ty) list
   | GFunc of string * (string * ty) list * ty * stmt list
   | GProto of string * ty list * ty

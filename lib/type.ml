@@ -243,12 +243,12 @@ end
 
 include Type
 
-module Set = struct
+module Set = Set.Make (struct
   type nonrec t = t
 
   let compare = Stdlib.compare
   let pp = Type.pp
-end
+end)
 
 module Map = Map.Make (struct
   type nonrec t = t

@@ -56,7 +56,9 @@ let pre_def name arg = PDef (name, arg)
 let pre_end_if = PEndIf
 
 (* GLOBAL SYMBOLS *)
+let comment text = GComment text
 let enum name vals = GEnum (name, vals)
+let struct_decl name = GStructDecl name
 let struct_ name fields = GStruct (name, fields)
 let func name args ret body = GFunc (name, args, ret, body)
 let proto name tys ret = GProto (name, tys, ret)

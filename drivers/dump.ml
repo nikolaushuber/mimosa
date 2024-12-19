@@ -111,7 +111,7 @@ let ooir =
 let main_c files =
   let open Reserr in
   let open Fmt in
-  (list C_printer.pp) stdout
+  C_printer.pp stdout
     (map Parse.f files
     >>= Dependency.f
     >>= Eq_ordering.f
@@ -121,7 +121,7 @@ let main_c files =
     |> Reserr.unpack
     |> List.map Normalise.f
     |> List.map Objectify.f
-    |> List.map Ccomp.f)
+    |> Ccomp.f)
 
 let c = Cmd.(v (info "c" ~doc:"Dump C code.") Term.(const main_c $ Args.files))
 
