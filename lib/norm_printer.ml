@@ -65,10 +65,9 @@ and pp_block ppf (l, e) =
 let pp_step ppf (name, input, _, e, _) =
   pf ppf "@[<2>step@ %s@ (%a)@ %a@]@\n" name pp_pattern input pp_block e
 
-let pp_item ppf = function
-  | Step s -> pp_step ppf s
+let pp_proto ppf (name, input, _) =
+  pf ppf "@[<2>extern step@ %s@ (%a)@]@\n" name pp_pattern input
 
-let pp_items ppf l = pf ppf "@[<hov0>%a@]" (list pp_item) l
-
-let pp ppf (Package (name, items)) =
-  pf ppf "@[<v>@[package@;<1 2>%s@]@;@;%a@]@." name pp_items items
+let pp ppf p =
+  pf ppf "@[<v>@[package@;<1 2>%s@]@;@;%a@;%a@]@." p.pack_name (list pp_proto)
+    p.pack_protos (list pp_step) p.pack_steps

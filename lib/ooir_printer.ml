@@ -71,11 +71,14 @@ let pp_machine ppf m =
     (list ~sep:(fun ppf _ -> pf ppf ";@;<1 2>") pp_instr)
     m.def
 
-let pp_item ppf = function
-  | Machine m -> pp_machine ppf m
+let pp_proto ppf p =
+  pf ppf "@[@[<2>proto@;%s@]@\n@[<2>inputs:@;%a@]@\n@]@\n" p.proto_name
+    (list ~sep:comma (pair ~sep:Norm_printer.colon string Type.pp))
+    p.proto_inputs
 
-let pp_items ppf l =
-  pf ppf "@[<v0>%a@]" (list ~sep:(fun ppf _ -> pf ppf "@\n") pp_item) l
+let pp_items pp ppf l =
+  pf ppf "@[<v0>%a@]" (list ~sep:(fun ppf _ -> pf ppf "@\n") pp) l
 
-let pp ppf (Package (name, items)) =
-  pf ppf "@[<v>@[package %s@]@;@;%a@]" name pp_items items
+let pp ppf p =
+  pf ppf "@[<v>@[package %s@]@;@;%a@;%a@]" p.pack_name (pp_items pp_proto)
+    p.pack_protos (pp_items pp_machine) p.pack_machines

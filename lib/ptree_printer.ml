@@ -133,10 +133,17 @@ let sexp_of_step step =
   in
   List [ Atom "step"; name; input'; output'; defs' ]
 
+let sexp_of_proto p =
+  let name = Atom p.pproto_name.txt in
+  let input' = sexp_of_pattern p.pproto_input in
+  let output' = sexp_of_pattern p.pproto_output in
+  List [ Atom "step"; name; input'; output' ]
+
 let rec sexp_of_package_item item = sexp_of_package_item_desc item.ppack_item
 
 and sexp_of_package_item_desc = function
   | Ppack_step s -> sexp_of_step s
+  | Ppack_proto p -> sexp_of_proto p
   | Ppack_node _ -> failwith "Not yet implemented"
   | Ppack_link _ -> failwith "Not yet implemented"
 

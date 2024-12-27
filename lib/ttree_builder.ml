@@ -53,6 +53,10 @@ let esome e =
   mk_expr (ESome e) (TOption ty)
 
 let step step_name step_input step_output step_def =
-  Step { step_name; step_input; step_output; step_def }
+  { step_name; step_input; step_output; step_def }
 
-let package pack_name pack_items = { pack_name; pack_items }
+let proto proto_name proto_input proto_output =
+  { proto_name; proto_input; proto_output }
+
+let package pack_name pack_protos pack_steps pack_links pack_nodes =
+  { pack_name; pack_steps; pack_protos; pack_links; pack_nodes }

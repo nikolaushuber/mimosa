@@ -14,6 +14,8 @@ type t =
   | Unification of string * string
   | Unbound_package of string
   | Unbound_value of string
+  | Missing_type_in_proto
+  | Typevar_in_proto
 
 open Fmt
 
@@ -58,3 +60,9 @@ let pp ppf = function
         t2 t1
   | Unbound_package name -> pf ppf "Undefined package %s" name
   | Unbound_value name -> pf ppf "Unknown name %s" name
+  | Missing_type_in_proto ->
+      pf ppf "%a@\n%a" text "Missing type annotation" text
+        "Externally defined steps must specify their argument types"
+  | Typevar_in_proto ->
+      pf ppf "%a@\n%a" text "Type variable in external step" text
+        "Externally defined steps cannot use type variables in their signature"

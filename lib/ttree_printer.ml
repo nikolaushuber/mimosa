@@ -79,10 +79,13 @@ let pp_step ppf step =
     (list ~sep:(any ";@;") pp_eq)
     step.step_def
 
-let pp_item ppf = function
-  | Step s -> pp_step ppf s
+let pp_proto ppf p =
+  pf ppf "step %s %a --> %a" p.proto_name (parens pp_pat) p.proto_input
+    (parens pp_pat) p.proto_output
 
 let pp ppf pack =
-  pf ppf "@[<v>package %s@;@;%a@]" pack.pack_name
-    (list ~sep:(cut ++ cut) pp_item)
-    pack.pack_items
+  pf ppf "@[<v>package %s@;@;%a@;%a@]" pack.pack_name
+    (list ~sep:(cut ++ cut) pp_proto)
+    pack.pack_protos
+    (list ~sep:(cut ++ cut) pp_step)
+    pack.pack_steps

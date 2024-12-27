@@ -1,3 +1,5 @@
+(** Parsetree as produced by the parser *)
+
 type 'a loc = 'a Location.loc
 
 type core_type = { ptype_desc : core_type_desc; ptype_loc : Location.t }
@@ -84,6 +86,13 @@ type step = {
   pstep_loc : Location.t;
 }
 
+type proto = {
+  pproto_name : string loc;
+  pproto_input : pattern;
+  pproto_output : pattern;
+  pproto_loc : Location.t;
+}
+
 type port = { pport_name : string; pport_async : bool; pport_loc : Location.t }
 type time_unit = Ms
 
@@ -95,7 +104,7 @@ type period = {
 
 type node = {
   pnode_name : string loc;
-  pnode_implements : Ident.t loc;
+  pnode_implements : Lident.t loc;
   pnode_inputs : port list;
   pnode_outputs : port list;
   pnode_period : period;
@@ -116,6 +125,7 @@ type package_item = { ppack_item : package_item_desc; ppack_loc : Location.t }
 
 and package_item_desc =
   | Ppack_step of step
+  | Ppack_proto of proto
   | Ppack_node of node
   | Ppack_link of link
 

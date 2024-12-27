@@ -1,15 +1,5 @@
 package Norm
 
-step test2 (input_0 : (bool * bool))
-  init_1 : bool, signal_2 : bool = input_0
-  tmp_4 : bool = false
-  tmp_5 : bool = signal_2
-  tmp_6 : bool = tmp_4 fby tmp_5
-  tmp_7 : bool = init_1
-  tmp_8 : bool = tmp_6
-  tmp_9 : bool = tmp_7 fby tmp_8
-  out_3 : bool = tmp_9
-  in out_3
 
 step test (input_0 : (bool * bool * bool * bool))
   cond_1 : bool, init_2 : bool, signal_3 : bool, default_4 : bool = input_0
@@ -27,4 +17,15 @@ step test (input_0 : (bool * bool * bool * bool))
     else default_4
   out_5 : bool = tmp_13
   in out_5
+
+step test2 (input_0 : (bool * bool))
+  init_1 : bool, signal_2 : bool = input_0
+  tmp_4 : bool = false
+  tmp_5 : bool = signal_2
+  tmp_6 : bool = tmp_4 fby tmp_5
+  tmp_7 : bool = init_1
+  tmp_8 : bool = tmp_6
+  tmp_9 : bool = tmp_7 fby tmp_8
+  out_3 : bool = tmp_9
+  in out_3
 

@@ -56,5 +56,14 @@ type step = {
   step_def : (pat * expr) list;
 }
 
-type item = Step of step
-type t = { pack_name : string; pack_items : item list }
+type proto = { proto_name : string; proto_input : pat; proto_output : pat }
+type link = unit
+type node = unit
+
+type t = {
+  pack_name : string;
+  pack_protos : proto list;
+  pack_steps : step list;
+  pack_links : link list;
+  pack_nodes : node list;
+}

@@ -210,9 +210,16 @@ let trans_step { step_name; step_input; step_output; step_def } =
     (pvar in_var step_input.pat_ty)
     step_output.pat_ty body !counter
 
-let trans_item = function
-  | Step s -> trans_step s
+let trans_proto { proto_name; proto_input; proto_output } =
+  let _, input_cont = trans_pattern [] proto_input in
+  let input_pat =
+    match input_cont () with
+    | [ (p, _) ] -> p
+    | _ -> assert false
+  in
+  proto proto_name input_pat proto_output.pat_ty
 
 let f pack =
-  let items' = List.map trans_item pack.pack_items in
-  package pack.pack_name items'
+  package pack.pack_name
+    (List.map trans_proto pack.pack_protos)
+    (List.map trans_step pack.pack_steps)

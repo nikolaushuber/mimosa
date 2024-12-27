@@ -241,39 +241,48 @@ let rec ty_core_type lenv map c =
   | Ptype_bool -> (map, TBool)
   | Ptype_real -> (map, TReal)
 
-let rec ty_pattern lenv map p =
+let rec ty_pattern ?(proto = false) lenv map p =
   let get_ty map p =
     match p.ppat_ty with
-    | Some t -> ty_core_type lenv map t
+    | Some t -> ty_core_type lenv map t |> ok
     | None ->
-        let n = next_state () in
-        (map, TVar n)
+        if proto then
+          let err = Error.Missing_type_in_proto in
+          let loc = p.ppat_loc in
+          error (err, loc)
+        else
+          let n = next_state () in
+          (map, TVar n) |> ok
   in
   match p.ppat_desc with
   | Ppat_any ->
-      let map', ty = get_ty map p in
+      let* map', ty = get_ty map p in
       (lenv, map', ty, pany ty) |> ok
   | Ppat_unit ->
-      let map', ty = get_ty map p in
+      let* map', ty = get_ty map p in
       let* _ = unify ~loc:p.ppat_loc TUnit ty in
       (lenv, map', TUnit, punit) |> ok
   | Ppat_var v ->
-      let ty, lenv' =
-        match Env.find_opt v.txt lenv with
-        | Some s ->
-            let ty = Scheme.instantiate s state in
-            (ty, lenv)
-        | None ->
-            let n = next_state () in
-            let ty = TVar n in
-            let lenv' = Env.add lenv v.txt (Int.Set.empty, ty) in
-            (ty, lenv')
-      in
-      let map', spec_ty = get_ty map p in
-      let* s = unify ~loc:p.ppat_loc spec_ty ty in
-      let ty' = apply s ty in
-      let lenv'' = Env.apply s lenv' in
-      (lenv'', map', ty', pvar v.txt ty') |> ok
+      if proto then
+        let* map', ty = get_ty map p in
+        (lenv, map', ty, pvar v.txt ty) |> ok
+      else
+        let ty, lenv' =
+          match Env.find_opt v.txt lenv with
+          | Some s ->
+              let ty = Scheme.instantiate s state in
+              (ty, lenv)
+          | None ->
+              let n = next_state () in
+              let ty = TVar n in
+              let lenv' = Env.add lenv v.txt (Int.Set.empty, ty) in
+              (ty, lenv')
+        in
+        let* map', spec_ty = get_ty map p in
+        let* s = unify ~loc:p.ppat_loc spec_ty ty in
+        let ty' = apply s ty in
+        let lenv'' = Env.apply s lenv' in
+        (lenv'', map', ty', pvar v.txt ty') |> ok
   | Ppat_tuple ps ->
       (* Because of the way we parse tuple patterns the type of the overall
          pattern will always be None, i.e. the user cannot specify
@@ -284,7 +293,7 @@ let rec ty_pattern lenv map p =
       let* lenv', map', tys, pats =
         fold_left
           (fun (lenv, map, tys, pats) p ->
-            let* lenv', map', ty, p' = ty_pattern lenv map p in
+            let* lenv', map', ty, p' = ty_pattern ~proto lenv map p in
             (lenv', map', ty :: tys, p' :: pats) |> ok)
           (lenv, map, [], []) ps
       in
@@ -368,24 +377,38 @@ let ty_step genv lenv step =
 
   (lenv', Ttree_builder.step name input output def) |> ok
 
-let ty_item genv lenv item =
+let ty_proto lenv p =
+  let* _, _, ty_in, p_in =
+    ty_pattern ~proto:true Env.empty String.Map.empty p.pproto_input
+  in
+  let* _, _, ty_out, p_out =
+    ty_pattern ~proto:true Env.empty String.Map.empty p.pproto_output
+  in
+  let name = p.pproto_name.txt in
+
+  let lenv' = Env.add lenv name (Int.Set.empty, TFunc (ty_in, ty_out)) in
+
+  (lenv', Ttree_builder.proto name p_in p_out) |> ok
+
+let ty_item genv (lenv, acc_protos, acc_steps) item =
   match item.ppack_item with
-  | Ppack_step s -> ty_step genv lenv s
+  | Ppack_step s ->
+      let* lenv', step = ty_step genv lenv s in
+      (lenv', acc_protos, step :: acc_steps) |> ok
+  | Ppack_proto p ->
+      let* lenv', proto = ty_proto lenv p in
+      (lenv', proto :: acc_protos, acc_steps) |> ok
   | Ppack_node _ -> failwith "not yet implemented"
   | Ppack_link _ -> failwith "not yet implemented"
 
 let ty_pack genv pack =
   let name = pack.ppack_name.txt in
   let items = pack.ppack_items in
-  let* lenv, items =
-    fold_left
-      (fun (lenv, items) item ->
-        let* lenv', item' = ty_item genv lenv item in
-        (lenv', item' :: items) |> ok)
-      (Env.empty, []) items
+  let* lenv, protos, steps =
+    fold_left (ty_item genv) (Env.empty, [], []) items
   in
   let genv = String.Map.add name lenv genv in
-  let pack = package name (List.rev items) in
+  let pack = package name protos steps [] [] in
   (genv, pack) |> ok
 
 let f (d : Ptree.t list) : Ttree.t list Reserr.t =

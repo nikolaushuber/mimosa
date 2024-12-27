@@ -1,5 +1,26 @@
 package Ooir
 
+
+machine test
+memory: first_17 : bool, first_15 : bool
+instances: 
+reset: first_17 := true; first_15 := true
+inputs: input_0 : (bool * bool * bool * bool)
+body:
+  tmp_14 = input_0;
+  cond_1, init_2, signal_3, default_4 = tmp_14;
+  tmp_6 = cond_1;
+  if tmp_6
+  then tmp_7 = false; tmp_8 = signal_3; tmp_16 = !first_15;
+      if tmp_16 then tmp_9 = tmp_7 else tmp_9 = tmp_8; first_15 := false;
+      tmp_10 = init_2; tmp_11 = tmp_9; tmp_18 = !first_17;
+      if tmp_18 then tmp_12 = tmp_10 else tmp_12 = tmp_11; first_17 := false;
+      tmp_13 = tmp_12
+  else tmp_13 = default_4;
+  out_5 = tmp_13;
+  return_val_19 = out_5;
+  return return_val_19
+
 machine test2
 memory: first_13 : bool, first_11 : bool
 instances: 
@@ -21,23 +42,3 @@ body:
   out_3 = tmp_9;
   return_val_15 = out_3;
   return return_val_15
-
-machine test
-memory: first_17 : bool, first_15 : bool
-instances: 
-reset: first_17 := true; first_15 := true
-inputs: input_0 : (bool * bool * bool * bool)
-body:
-  tmp_14 = input_0;
-  cond_1, init_2, signal_3, default_4 = tmp_14;
-  tmp_6 = cond_1;
-  if tmp_6
-  then tmp_7 = false; tmp_8 = signal_3; tmp_16 = !first_15;
-      if tmp_16 then tmp_9 = tmp_7 else tmp_9 = tmp_8; first_15 := false;
-      tmp_10 = init_2; tmp_11 = tmp_9; tmp_18 = !first_17;
-      if tmp_18 then tmp_12 = tmp_10 else tmp_12 = tmp_11; first_17 := false;
-      tmp_13 = tmp_12
-  else tmp_13 = default_4;
-  out_5 = tmp_13;
-  return_val_19 = out_5;
-  return return_val_19

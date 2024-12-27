@@ -1,0 +1,5 @@
+File "missing_type_in_proto.mim", line 1, characters 22-23
+1 | step extern (a : int, b) --> (c : bool)
+                          ^
+Error: Missing type annotation
+Externally defined steps must specify their argument types

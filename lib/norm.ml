@@ -27,5 +27,10 @@ and expr_desc =
 and block = (pattern * expr) list * base_expr
 
 type step = string * pattern * Type.t * block * int
-type item = Step of step
-type t = Package of string * item list
+type proto = string * pattern * Type.t
+
+type t = {
+  pack_name : string;
+  pack_steps : step list;
+  pack_protos : proto list;
+}

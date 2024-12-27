@@ -149,11 +149,7 @@ let duplicate_step (lcache : Cache.t) step =
 let trans_step step ((_, lcache) as acc) =
   let* steps = duplicate_step lcache step in
   let acc', steps' = List.fold_left_map cache_step acc steps in
-  (List.map (fun s -> Step s) steps', acc') |> ok
-
-let trans_item item acc =
-  match item with
-  | Step s -> trans_step s acc
+  (steps', acc') |> ok
 
 let trans_pack pack gcache =
   let lcache =
@@ -162,9 +158,9 @@ let trans_pack pack gcache =
     | None -> Cache.empty
   in
   let cache = (gcache, lcache) in
-  let* items', (_, lcache') = fold_right_map trans_item pack.pack_items cache in
+  let* steps', (_, lcache') = fold_right_map trans_step pack.pack_steps cache in
   let gcache' = String.Map.add pack.pack_name lcache' gcache in
-  ({ pack with pack_items = List.concat (List.rev items') }, gcache') |> ok
+  ({ pack with pack_steps = List.concat (List.rev steps') }, gcache') |> ok
 
 let f (d : t list) : t list Reserr.t =
   let* d', _ = fold_right_map trans_pack d String.Map.empty in

@@ -85,8 +85,7 @@ let rec trans_instr self = function
   | Return s -> [ stmt_return (expr_var s) ]
   | If (c, t, e) ->
       [
-        stmt_if
-          (expr_var c)
+        stmt_if (expr_var c)
           (List.concat_map (trans_instr self) t)
           (List.concat_map (trans_instr self) e);
       ]
@@ -145,12 +144,23 @@ let trans_machine pack m =
   in
   [ state_struct; reset_func; step_func ]
 
+let trans_proto p =
+  let tys = List.map snd p.proto_inputs in
+  let in_tys = List.map trans_type tys in
+  let ret_ty = trans_type p.proto_ret in
+  [ proto p.proto_name in_tys ret_ty ]
+
 let trans_item pack = function
   | Machine m -> trans_machine pack m
+  | Proto p -> trans_proto p
 
-let trans_pack (Package (name, items)) : C_ast.t =
-  let lower_case_name = String.lowercase_ascii name in
-  List.concat_map (trans_item lower_case_name) items
+let trans_pack p : C_ast.t =
+  let lower_case_name = String.lowercase_ascii p.pack_name in
+  let protos = List.concat_map trans_proto p.pack_protos in
+  let machines =
+    List.concat_map (trans_machine lower_case_name) p.pack_machines
+  in
+  protos @ machines
 
 let find_nested_tys tys =
   let open Type in
@@ -174,12 +184,23 @@ let tys_of_machine m =
   let ret_ty = m.ret in
   find_nested_tys ((ret_ty :: in_tys) @ local_tys)
 
+let tys_of_proto p =
+  let in_tys = List.map snd p.proto_inputs in
+  let ret_ty = p.proto_ret in
+  find_nested_tys (ret_ty :: in_tys)
+
 let tys_of_item = function
   | Machine m -> tys_of_machine m
+  | Proto p -> tys_of_proto p
 
-let tys_of_package (Package (_, items)) =
+let tys_of_package p =
   let open Type in
-  List.fold_left (fun acc i -> Set.union acc (tys_of_item i)) Set.empty items
+  let acc =
+    List.fold_left
+      (fun acc i -> Set.union acc (tys_of_machine i))
+      Set.empty p.pack_machines
+  in
+  List.fold_left (fun acc i -> Set.union acc (tys_of_proto i)) acc p.pack_protos
 
 let get_all_types packs =
   let open Type in

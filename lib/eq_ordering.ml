@@ -146,6 +146,7 @@ let order_item item =
     | Ppack_step s ->
         let* s' = order_step s in
         Ppack_step s' |> ok
+    | Ppack_proto p -> Ppack_proto p |> ok
     | Ppack_node n -> Ppack_node n |> ok
     | Ppack_link l -> Ppack_link l |> ok
   in

@@ -124,6 +124,8 @@ package:
 
 toplevel_def:
     | s = step { pack_step s }
+    | p = proto { pack_proto p }
+    | n = node { pack_node ~loc:(to_loc $loc) n }
 
 step:
     |   "step"
@@ -134,6 +136,40 @@ step:
         "{" body = step_body "}"
     {
         step ~loc:(to_loc $loc) name ps rs body
+    }
+
+proto:
+    |   "step"
+        name = located_lower_string
+        ps = simple_pattern
+        "-" "->"
+        rs = simple_pattern
+    {
+        proto ~loc:(to_loc $loc) name ps rs
+    }
+
+node:
+    | "node" name = located_lower_string
+      "implements" impl = ident_loc
+      "(" inputs = separated_list(",", node_param) ")"
+      "-" "->"
+      "(" outputs = separated_list(",", node_param) ")"
+      "every" period = periodicity
+    {
+      node ~loc:(to_loc $loc) name impl inputs outputs period
+    }
+
+periodicity:
+    | time = TK_INT tunit = time_unit {
+        period ~loc:(to_loc $loc) time tunit
+    }
+
+time_unit:
+    | "ms" { ms }
+
+node_param:
+    | async = "async"? name = TK_LSTRING {
+         port ~loc:(to_loc $loc) name (Option.is_some async)
     }
 
 simple_ty:
@@ -186,6 +222,7 @@ ident_loc:
 literal_constant:
     | i = TK_INT { eint ~loc:(to_loc $loc) i }
     | b = TK_BOOL { ebool ~loc:(to_loc $loc) b }
+    | f = TK_FLOAT { ereal ~loc:(to_loc $loc) f }
     | "(" ")" { eunit ~loc:(to_loc $loc) () }
 
 simple_expr:
@@ -270,44 +307,3 @@ tuple_elements:
     | "<=." { binop ~loc:(to_loc $loc) Ptree.Pbinop_rleq }
     | ">." { binop ~loc:(to_loc $loc) Ptree.Pbinop_rgt }
     | ">=." { binop ~loc:(to_loc $loc) Ptree.Pbinop_rgeq }
-
-/* Definition of system file parser 
- * This could go into its own file, but ultimately we should 
- * probably combine .mim and .msys files into one general
- * description format. 
- */ 
-
-// parse_sys: 
-//     | l = topdef_sys* "eof" { 
-//         package_of_loc $startpos, l 
-//     }
-
-// topdef_sys: 
-//     | "node" name = TK_LSTRING "implements" 
-//       package = TK_USTRING "::" step = TK_LSTRING 
-//       "(" inputs = separated_list(",", param_sys) ")" "=" 
-//       "(" outputs = separated_list(",", param_sys) ")" 
-//       "every" time = TK_INT tunit = time_unit {
-//         let open Sys_ast in 
-//         let period = time, tunit in 
-//         let desc = mk_node_desc package step inputs outputs period in 
-//         name, mk_node $loc desc 
-//     }
-//     | "channel" name = TK_LSTRING ":" ty = ty {
-//         let open Sys_ast in 
-//         name, mk_link $loc (mk_channel ty)  
-//     } 
-//     | "register" name = TK_LSTRING ":" ty = ty "=" l = literal_constant {
-//         let open Sys_ast in 
-//         let e, _ = l in 
-//         name, mk_link $loc (mk_register ty e) 
-//     }
-
-// time_unit: 
-//     | "ms" { Sys_ast.mk_ms () } 
-
-// param_sys:
-//     | async = "async"? name = TK_LSTRING { 
-//         let open Sys_ast in 
-//         mk_port $loc name (Option.is_some async) 
-//     }

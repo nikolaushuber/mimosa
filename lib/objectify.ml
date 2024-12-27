@@ -127,9 +127,11 @@ let trans_step (name, input, ret_ty, def, state) =
   let s' = s @ [ assign ret_var (trans_expr m ret); return ret_var ] in
   machine name inputs ((ret_var, ret_ty) :: l) m j si ret_ty self s'
 
-let trans_item = function
-  | Step s -> trans_step s
+let trans_proto (name, input, ret_ty) =
+  let inputs = trans_param input in
+  proto name inputs ret_ty
 
-let f (Package (name, items)) =
-  let items' = List.map trans_item items in
-  package name items'
+let f p =
+  package p.pack_name
+    (List.map trans_proto p.pack_protos)
+    (List.map trans_step p.pack_steps)

@@ -148,3 +148,18 @@
   (progn
    (diff incorrect_type_1_errors.expected incorrect_type_1_errors))))
 
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stderr-to
+   missing_type_in_proto_errors
+   (run mimosa check %{dep:missing_type_in_proto.mim}))))
+
+(rule
+ (alias runtest)
+ (package mimosa)
+ (action
+  (progn
+   (diff missing_type_in_proto_errors.expected missing_type_in_proto_errors))))
+

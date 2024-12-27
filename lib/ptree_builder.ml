@@ -18,10 +18,12 @@ let mk_expr pexpr_desc pexpr_loc = { pexpr_desc; pexpr_loc }
 let eident ?(loc = noloc) id = mk_expr (Pexpr_ident id) loc
 let constant_int i = Pconst_int i
 let constant_bool b = Pconst_bool b
+let constant_real r = Pconst_real r
 let econstant ?(loc = noloc) const = mk_expr (Pexpr_constant const) loc
 let eunit ?(loc = noloc) () = econstant ~loc Pconst_unit
 let eint ?(loc = noloc) i = econstant ~loc (constant_int i)
 let ebool ?(loc = noloc) b = econstant ~loc (constant_bool b)
+let ereal ?(loc = noloc) f = econstant ~loc (constant_real f)
 let evar ?(loc = noloc) n = mk_expr (Pexpr_ident n) loc
 let eunop ?(loc = noloc) op e = mk_expr (Pexpr_unop (op, e)) loc
 let ebinop ?(loc = noloc) op e1 e2 = mk_expr (Pexpr_binop (op, e1, e2)) loc
@@ -41,6 +43,9 @@ let binop ?(loc = noloc) pbinop_desc = { pbinop_desc; pbinop_loc = loc }
 
 let step ?(loc = noloc) pstep_name pstep_input pstep_output pstep_def =
   { pstep_name; pstep_input; pstep_output; pstep_def; pstep_loc = loc }
+
+let proto ?(loc = noloc) pproto_name pproto_input pproto_output =
+  { pproto_name; pproto_input; pproto_output; pproto_loc = loc }
 
 let port ?(loc = noloc) pport_name pport_async =
   { pport_name; pport_async; pport_loc = loc }
@@ -71,6 +76,11 @@ let package_item ?(loc = noloc) ppack_item = { ppack_item; ppack_loc = loc }
 let pack_step ?(loc = noloc) step =
   { ppack_item = Ppack_step step; ppack_loc = loc }
 
-let pack_node node = Ppack_node node
+let pack_proto ?(loc = noloc) proto =
+  { ppack_item = Ppack_proto proto; ppack_loc = loc }
+
+let pack_node ?(loc = noloc) node =
+  { ppack_item = Ppack_node node; ppack_loc = loc }
+
 let pack_link link = Ppack_link link
 let package ppack_name ppack_items = { ppack_name; ppack_items }

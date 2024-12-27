@@ -1,5 +1,11 @@
 type param = string * Type.t
 
+type proto = {
+  proto_name : string;
+  proto_inputs : param list;
+  proto_ret : Type.t;
+}
+
 type machine = {
   name : string;
   memory : param list;
@@ -35,5 +41,10 @@ and expr_desc =
   | UnOp of Ttree.unop * string
   | BinOp of Ttree.binop * string * string
 
-type item = Machine of machine
-type t = Package of string * item list
+type item = Machine of machine | Proto of proto
+
+type t = {
+  pack_name : string;
+  pack_protos : proto list;
+  pack_machines : machine list;
+}

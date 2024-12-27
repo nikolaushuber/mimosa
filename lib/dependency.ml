@@ -1,6 +1,6 @@
-(** Package ordering * * This pass orders a list of packages according to their
-    mutual dependencies. * Cyclic dependencies between packages are reported as
-    an error. *)
+(** Package ordering: This pass orders a list of packages according to their
+    mutual dependencies. Cyclic dependencies between packages are reported as an
+    error. *)
 
 open Ptree
 
@@ -42,10 +42,16 @@ let pack_in_step acc step =
       pack_in_expr acc' rhs)
     acc step.pstep_def
 
+let pack_in_node acc n =
+  match n.pnode_implements.txt with
+  | Lident _ -> acc
+  | Ldot (p, _) -> String.Set.add p acc
+
 let pack_in_item acc item =
   match item.ppack_item with
   | Ppack_step s -> pack_in_step acc s
-  | Ppack_node _ -> acc
+  | Ppack_proto _ -> acc
+  | Ppack_node n -> pack_in_node acc n
   | Ppack_link _ -> acc
 
 let pack_dependency p =

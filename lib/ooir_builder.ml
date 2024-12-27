@@ -24,6 +24,10 @@ let ebinop op e1 e2 ty = expr (BinOp (op, e1, e2)) ty
 let param name ty = (name, ty)
 
 let machine name inputs locals memory instances reset ret self def =
-  Machine { name; inputs; locals; memory; instances; reset; ret; self; def }
+  { name; inputs; locals; memory; instances; reset; ret; self; def }
 
-let package name items = Package (name, items)
+let proto proto_name proto_inputs proto_ret =
+  { proto_name; proto_inputs; proto_ret }
+
+let package pack_name pack_protos pack_machines =
+  { pack_name; pack_protos; pack_machines }
