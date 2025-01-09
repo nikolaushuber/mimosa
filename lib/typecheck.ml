@@ -45,7 +45,6 @@ let rec ty_expr genv lenv expr =
     | Pexpr_arrow (e1, e2) -> ty_arrow genv lenv e1 e2
     | Pexpr_fby (e1, e2) -> ty_fby genv lenv e1 e2
     | Pexpr_pre e -> ty_pre genv lenv e
-    | Pexpr_match _ -> failwith "not yet implemented"
     | Pexpr_none -> ty_none ()
     | Pexpr_some e -> ty_some genv lenv e
   in

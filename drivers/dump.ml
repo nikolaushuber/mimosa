@@ -17,7 +17,7 @@ let main_pack_dep files =
   let open Fmt in
   pp false (list string) stdout
     (map Parse.f files
-    >>= Dependency.f
+    >>= Global_odering.f
     >>= map (fun p -> p.Ptree.ppack_name.txt |> ok))
 
 let packdep =
@@ -30,7 +30,7 @@ let main_eqorder files =
   let open Reserr in
   let open Fmt in
   pp false (list Ptree_printer.pp) stdout
-    (map Parse.f files >>= Dependency.f >>= Eq_ordering.f)
+    (map Parse.f files >>= Global_odering.f >>= Eq_ordering.f)
 
 let eqorder =
   Cmd.(
@@ -43,9 +43,9 @@ let main_dump_ttree files =
   let open Fmt in
   pp false (list Ttree_printer.pp) stdout
     (map Parse.f files
-    >>= Dependency.f
+    >>= Global_odering.f
     >>= Eq_ordering.f
-    >>= Step_ordering.f
+    >>= Local_ordering.f
     >>= Typecheck.f)
 
 let ttree =
@@ -59,9 +59,9 @@ let main_mono files =
   let open Fmt in
   pp false (list Ttree_printer.pp) stdout
     (map Parse.f files
-    >>= Dependency.f
+    >>= Global_odering.f
     >>= Eq_ordering.f
-    >>= Step_ordering.f
+    >>= Local_ordering.f
     >>= Typecheck.f
     >>= Monomorphise.f)
 
@@ -76,9 +76,9 @@ let main_norm files =
   let open Fmt in
   (list Norm_printer.pp) stdout
     (map Parse.f files
-    >>= Dependency.f
+    >>= Global_odering.f
     >>= Eq_ordering.f
-    >>= Step_ordering.f
+    >>= Local_ordering.f
     >>= Typecheck.f
     >>= Monomorphise.f
     |> Reserr.unpack
@@ -95,9 +95,9 @@ let main_ooir files =
   let open Fmt in
   (list Ooir_printer.pp) stdout
     (map Parse.f files
-    >>= Dependency.f
+    >>= Global_odering.f
     >>= Eq_ordering.f
-    >>= Step_ordering.f
+    >>= Local_ordering.f
     >>= Typecheck.f
     >>= Monomorphise.f
     |> Reserr.unpack
@@ -113,9 +113,9 @@ let main_c files =
   let open Fmt in
   C_printer.pp stdout
     (map Parse.f files
-    >>= Dependency.f
+    >>= Global_odering.f
     >>= Eq_ordering.f
-    >>= Step_ordering.f
+    >>= Local_ordering.f
     >>= Typecheck.f
     >>= Monomorphise.f
     |> Reserr.unpack

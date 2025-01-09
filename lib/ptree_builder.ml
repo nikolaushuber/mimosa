@@ -31,13 +31,11 @@ let eeither ?(loc = noloc) e1 e2 = mk_expr (Pexpr_either (e1, e2)) loc
 let etuple ?(loc = noloc) exprs = mk_expr (Pexpr_tuple exprs) loc
 let eite ?(loc = noloc) i t e = mk_expr (Pexpr_ite (i, t, e)) loc
 let eapply ?(loc = noloc) func arg = mk_expr (Pexpr_apply (func, arg)) loc
-let ematch ?(loc = noloc) e cases = mk_expr (Pexpr_match (e, cases)) loc
 let earrow ?(loc = noloc) e1 e2 = mk_expr (Pexpr_arrow (e1, e2)) loc
 let efby ?(loc = noloc) e1 e2 = mk_expr (Pexpr_fby (e1, e2)) loc
 let epre ?(loc = noloc) e = mk_expr (Pexpr_pre e) loc
 let enone ?(loc = noloc) () = mk_expr Pexpr_none loc
 let esome ?(loc = noloc) e = mk_expr (Pexpr_some e) loc
-let case pcase_lhs pcase_rhs = { pcase_lhs; pcase_rhs }
 let unop ?(loc = noloc) punop_desc = { punop_desc; punop_loc = loc }
 let binop ?(loc = noloc) pbinop_desc = { pbinop_desc; pbinop_loc = loc }
 

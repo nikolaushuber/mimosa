@@ -55,15 +55,8 @@ let vars_used_by_expr =
     | Pexpr_apply (_, e) -> aux set e
     | Pexpr_tuple es -> fold_left aux set es
     | Pexpr_ite (e1, e2, e3) -> fold_left aux set [ e1; e2; e3 ]
-    | Pexpr_match (e, cases) ->
-        let* set' = aux set e in
-        fold_left aux_cases set' cases
     | Pexpr_none -> ok set
     | Pexpr_some e -> aux set e
-  and aux_cases set case =
-    let* lhs_set, _ = vars_of_pat case.pcase_lhs in
-    let* rhs_set = aux set case.pcase_rhs in
-    String.Set.diff rhs_set lhs_set |> ok
   in
   aux String.Set.empty
 

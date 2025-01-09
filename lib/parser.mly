@@ -84,7 +84,6 @@
 %token TK_ASSIGN "="
 %token TK_SEMI ";"
 %token TK_COLON ":"
-%token TK_BAR "|"
 %token TK_EOF "eof"
 %token TK_DOT "."
 
@@ -151,9 +150,9 @@ proto:
 node:
     | "node" name = located_lower_string
       "implements" impl = ident_loc
-      "(" inputs = separated_list(",", node_param) ")"
+      "(" inputs = separated_list(",", node_port) ")"
       "-" "->"
-      "(" outputs = separated_list(",", node_param) ")"
+      "(" outputs = separated_list(",", node_port) ")"
       "every" period = periodicity
     {
       node ~loc:(to_loc $loc) name impl inputs outputs period
@@ -167,8 +166,8 @@ periodicity:
 time_unit:
     | "ms" { ms }
 
-node_param:
-    | async = "async"? name = TK_LSTRING {
+node_port:
+    | async = "async"? name = ident_loc {
          port ~loc:(to_loc $loc) name (Option.is_some async)
     }
 

@@ -69,14 +69,11 @@ and expr_desc =
   | Pexpr_tuple of expression list
   | Pexpr_ite of expression * expression * expression
   | Pexpr_apply of expression * expression
-  | Pexpr_match of expression * case list
   | Pexpr_arrow of expression * expression
   | Pexpr_fby of expression * expression
   | Pexpr_pre of expression
   | Pexpr_none
   | Pexpr_some of expression
-
-and case = { pcase_lhs : pattern; pcase_rhs : expression }
 
 type step = {
   pstep_name : string loc;
@@ -93,7 +90,12 @@ type proto = {
   pproto_loc : Location.t;
 }
 
-type port = { pport_name : string; pport_async : bool; pport_loc : Location.t }
+type port = {
+  pport_name : Lident.t loc;
+  pport_async : bool;
+  pport_loc : Location.t;
+}
+
 type time_unit = Ms
 
 type period = {

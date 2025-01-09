@@ -93,10 +93,6 @@ and sexp_of_expr_desc = function
       let f' = sexp_of_expression f in
       let e' = sexp_of_expression e in
       List [ f'; e' ]
-  | Pexpr_match (e, cases) ->
-      let e' = sexp_of_expression e in
-      let cases' = List.map sexp_of_case cases in
-      List [ Atom "match"; e'; List cases' ]
   | Pexpr_arrow (e1, e2) ->
       let e1' = sexp_of_expression e1 in
       let e2' = sexp_of_expression e2 in
@@ -112,11 +108,6 @@ and sexp_of_expr_desc = function
   | Pexpr_some e ->
       let e' = sexp_of_expression e in
       List [ Atom "Some"; e' ]
-
-and sexp_of_case case =
-  let lhs' = sexp_of_pattern case.pcase_lhs in
-  let rhs' = sexp_of_expression case.pcase_rhs in
-  List [ lhs'; rhs' ]
 
 let sexp_of_step step =
   let name = Atom step.pstep_name.txt in

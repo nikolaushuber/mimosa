@@ -91,7 +91,6 @@ rule tokenize = parse
     | "=" { TK_ASSIGN }
     | ";" { TK_SEMI }
     | ":" { TK_COLON }
-    | "|" { TK_BAR }
     | "." { TK_DOT }
     | eof { TK_EOF }
     | _ as e {

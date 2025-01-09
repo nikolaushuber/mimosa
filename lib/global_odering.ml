@@ -24,14 +24,8 @@ let pack_in_expr acc =
         List.fold_left aux acc [ e1; e2 ]
     | Pexpr_tuple es -> List.fold_left aux acc es
     | Pexpr_ite (e1, e2, e3) -> List.fold_left aux acc [ e1; e2; e3 ]
-    | Pexpr_match (e, cases) ->
-        let acc' = aux acc e in
-        List.fold_left aux_cases acc' cases
     | Pexpr_none -> acc
     | Pexpr_some e -> aux acc e
-  and aux_cases acc case =
-    let acc' = pack_in_pat acc case.pcase_lhs in
-    aux acc' case.pcase_rhs
   in
   aux acc
 
@@ -42,10 +36,18 @@ let pack_in_step acc step =
       pack_in_expr acc' rhs)
     acc step.pstep_def
 
-let pack_in_node acc n =
-  match n.pnode_implements.txt with
+let pack_in_port acc p =
+  match p.pport_name.txt with
   | Lident _ -> acc
   | Ldot (p, _) -> String.Set.add p acc
+
+let pack_in_node acc n =
+  let acc' =
+    match n.pnode_implements.txt with
+    | Lident _ -> acc
+    | Ldot (p, _) -> String.Set.add p acc
+  in
+  List.fold_left pack_in_port acc' (n.pnode_inputs @ n.pnode_outputs)
 
 let pack_in_item acc item =
   match item.ppack_item with

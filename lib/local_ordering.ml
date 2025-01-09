@@ -20,12 +20,9 @@ let steps_used_in_expr acc =
         aux acc' e2
     | Pexpr_tuple es -> List.fold_left aux acc es
     | Pexpr_ite (i, t, e) -> List.fold_left aux acc [ i; t; e ]
-    | Pexpr_match (e, cases) ->
-        let acc' = aux acc e in
-        List.fold_left aux_cases acc' cases
     | Pexpr_none -> acc
     | Pexpr_some e -> aux acc e
-  and aux_cases acc case = aux acc case.pcase_rhs in
+  in
   aux acc
 
 let steps_used_by_step step =
