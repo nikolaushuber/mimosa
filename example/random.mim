@@ -1,0 +1,25 @@
+step random_bool () --> (out : bool)
+
+step random () --> out
+{
+    out = random_bool ();
+}
+
+(*
+
+module type Protos = sig
+    val random_bool : unit -> bool
+end
+
+module type Intf = sig
+    class random_bool : object
+        method run : unit -> bool
+    end
+    class random : object
+        method run : unit -> bool
+    end
+end
+
+module Make : functor (P : Protos) -> Intf
+
+*)

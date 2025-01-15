@@ -1,7 +1,7 @@
 open Norm
 open Type
 
-let pattern pat_desc pat_ty = { pat_desc; pat_ty }
+let pattern pat_desc pat_ty = Ttree.{ pat_desc; pat_ty }
 let pany = pattern PAny
 let punit = pattern PUnit TUnit
 let pvar name = pattern (PVar name)

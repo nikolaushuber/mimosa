@@ -1,4 +1,4 @@
-open C_builder
+(* open C_builder
 open Ooir
 
 let trans_id =
@@ -321,4 +321,4 @@ let f packs : C_ast.t =
   let opts_decl, opts_def = gen_opts all_tys in
   let tup_decl, tup_def = gen_tups all_tys in
   let imports = [ preproc (pre_include "stdbool.h") ] in
-  imports @ opts_decl @ tup_decl @ opts_def @ tup_def @ packs'
+  imports @ opts_decl @ tup_decl @ opts_def @ tup_def @ packs' *)

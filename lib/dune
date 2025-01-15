@@ -1,6 +1,8 @@
 (library
  (name mimosa)
- (libraries fmt compiler-libs.common pp_loc tsort sexplib))
+ (libraries fmt compiler-libs.common pp_loc tsort sexplib ppxlib)
+ (preprocess
+  (pps ppxlib.metaquot)))
 
 (ocamllex lexer)
 

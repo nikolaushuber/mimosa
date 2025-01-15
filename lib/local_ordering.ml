@@ -1,4 +1,4 @@
-(* Orders steps within a package *)
+(* Orders items within a package *)
 
 open Ptree
 
@@ -33,13 +33,15 @@ let steps_used_by_step step =
 let order_pack p =
   let open Reserr in
   let items = p.ppack_items in
-  let step_items, others =
-    List.partition
-      (fun item ->
+  let step_items, proto_items, link_items, node_items =
+    List.fold_right
+      (fun item (acc_step, acc_proto, acc_link, acc_node) ->
         match item.ppack_item with
-        | Ppack_step _ -> true
-        | _ -> false)
-      items
+        | Ppack_step _ -> (item :: acc_step, acc_proto, acc_link, acc_node)
+        | Ppack_proto _ -> (acc_step, item :: acc_proto, acc_link, acc_node)
+        | Ppack_link _ -> (acc_step, acc_proto, item :: acc_link, acc_node)
+        | Ppack_node _ -> (acc_step, acc_proto, acc_link, item :: acc_node))
+      items ([], [], [], [])
   in
   let steps =
     List.map
@@ -86,7 +88,7 @@ let order_pack p =
         error (err, loc)
   in
   let ordered_steps = List.map (fun i -> List.nth step_items i) sorted in
-  let ppack_items = others @ ordered_steps in
+  let ppack_items = proto_items @ ordered_steps @ link_items @ node_items in
   { p with ppack_items } |> ok
 
 let f d = Reserr.map order_pack d

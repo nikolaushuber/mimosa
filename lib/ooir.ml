@@ -1,18 +1,18 @@
-type param = string * Type.t
+type pattern = Norm.pat
 
 type proto = {
   proto_name : string;
-  proto_inputs : param list;
-  proto_ret : Type.t;
+  proto_input : Type.t;
+  proto_output : Type.t;
 }
 
 type machine = {
   name : string;
-  memory : param list;
+  memory : (string * Type.t) list;
   instances : (string * Lident.t) list;
   reset : instr list;
-  inputs : param list;
-  locals : param list;
+  input : pattern;
+  locals : (string * Type.t) list;
   ret : Type.t;
   def : instr list;
   self : string;

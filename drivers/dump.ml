@@ -108,7 +108,7 @@ let ooir =
   Cmd.(
     v (info "ooir" ~doc:"Dump object IR.") Term.(const main_ooir $ Args.files))
 
-let main_c files =
+(* let main_c files =
   let open Reserr in
   let open Fmt in
   C_printer.pp stdout
@@ -123,10 +123,32 @@ let main_c files =
     |> List.map Objectify.f
     |> Ccomp.f)
 
-let c = Cmd.(v (info "c" ~doc:"Dump C code.") Term.(const main_c $ Args.files))
+let c = Cmd.(v (info "c" ~doc:"Dump C code.") Term.(const main_c $ Args.files)) *)
+
+let main_ocaml files =
+  let open Reserr in
+  let open Fmt in
+  pf stdout "@[<v>%a@]@."
+    (list Ppxlib_ast.Pprintast.structure)
+    (map Parse.f files
+    >>= Global_odering.f
+    >>= Eq_ordering.f
+    >>= Local_ordering.f
+    >>= Typecheck.f
+    >>= Monomorphise.f
+    |> Reserr.unpack
+    |> List.map Normalise.f
+    |> List.map Objectify.f
+    |> List.map Ocaml_comp.trans_package)
+
+let ocaml =
+  Cmd.(
+    v
+      (info "ocaml" ~doc:"Dump OCaml code.")
+      Term.(const main_ocaml $ Args.files))
 
 let cmd =
   let doc = "Dump tool for debugging information." in
   let info = Cmd.info "dump" ~doc in
-  let cmds = [ ptree; packdep; eqorder; ttree; mono; norm; ooir; c ] in
+  let cmds = [ ptree; packdep; eqorder; ttree; mono; norm; ooir; ocaml ] in
   Cmd.group info cmds

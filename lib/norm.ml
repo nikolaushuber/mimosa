@@ -1,7 +1,12 @@
 (** k-normal form *)
 
-type pattern = { pat_desc : pat_desc; pat_ty : Type.t }
-and pat_desc = PAny | PUnit | PVar of string | PTuple of string list
+type pat = Ttree.pat = { pat_desc : pat_desc; pat_ty : Type.t }
+
+and pat_desc = Ttree.pat_desc =
+  | PAny
+  | PUnit
+  | PVar of string
+  | PTuple of pat list
 
 type base_expr = { base_expr_desc : base_expr_desc; base_expr_ty : Type.t }
 
@@ -24,10 +29,10 @@ and expr_desc =
   | EFby of string * block
   | ETuple of string list
 
-and block = (pattern * expr) list * base_expr
+and block = (pat * expr) list * base_expr
 
-type step = string * pattern * Type.t * block * int
-type proto = string * pattern * Type.t
+type step = string * pat * Type.t * block * int
+type proto = string * pat * Type.t
 
 type t = {
   pack_name : string;

@@ -257,10 +257,7 @@ let rec ty_pattern ?(proto = false) lenv map p =
   | Ppat_any ->
       let* map', ty = get_ty map p in
       (lenv, map', ty, pany ty) |> ok
-  | Ppat_unit ->
-      let* map', ty = get_ty map p in
-      let* _ = unify ~loc:p.ppat_loc TUnit ty in
-      (lenv, map', TUnit, punit) |> ok
+  | Ppat_unit -> (lenv, map, TUnit, punit) |> ok
   | Ppat_var v ->
       if proto then
         let* map', ty = get_ty map p in

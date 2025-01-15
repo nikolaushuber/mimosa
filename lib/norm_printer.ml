@@ -2,20 +2,7 @@ open Norm
 open Fmt
 
 let colon ppf _ = pf ppf " : "
-
-let pp_pattern ppf pat =
-  match pat.pat_desc with
-  | PAny -> string ppf "_"
-  | PUnit -> string ppf "()"
-  | PVar v -> pair ~sep:colon string Type.pp ppf (v, pat.pat_ty)
-  | PTuple ps ->
-      let tys =
-        match pat.pat_ty with
-        | TTuple tys -> tys
-        | _ -> assert false
-      in
-      (list ~sep:comma (pair ~sep:colon string Type.pp) |> box)
-        ppf (List.combine ps tys)
+let pp_pattern = Ttree_printer.pp_pat
 
 let pp_base_expr ppf e =
   match e.base_expr_desc with

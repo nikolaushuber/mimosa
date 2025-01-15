@@ -146,26 +146,16 @@ let rec trans_expr map e : Norm.block =
       let eqs'' = eqs' @ [ (pvar ret e.expr_ty, etuple es' e.expr_ty) ] in
       (eqs'', base_var ret e.expr_ty)
 
-let trans_pattern map pat =
+let rec trans_pattern map pat =
   match pat.pat_desc with
-  | PAny -> (map, fun e -> [ (pany pat.pat_ty, e) ])
-  | PUnit -> (map, fun e -> [ (punit, e) ])
+  | PAny -> (map, pany pat.pat_ty)
+  | PUnit -> (map, punit)
   | PVar v ->
       let v' = new_var ~prefix:v () in
-      ((v, v') :: map, fun e -> [ (pvar v' pat.pat_ty, e) ])
+      ((v, v') :: map, pvar v' pat.pat_ty)
   | PTuple ps ->
-      let rec aux (map, acc, eqs) p =
-        match p.pat_desc with
-        | PAny | PUnit ->
-            let x = new_var ~prefix:"unused" () in
-            (map, acc @ [ x ], eqs)
-        | PVar v ->
-            let v' = new_var ~prefix:v () in
-            ((v, v') :: map, acc @ [ v' ], eqs)
-        | PTuple ps -> List.fold_left aux (map, acc, eqs) ps
-      in
-      let map', r, eqs = List.fold_left aux (map, [], []) ps in
-      (map', fun e -> (ptuple r pat.pat_ty, e) :: eqs)
+      let map', ps' = List.fold_left_map trans_pattern map ps in
+      (map', ptuple ps' pat.pat_ty)
 
 let rec trans_output map pat =
   match pat.pat_desc with
@@ -196,28 +186,18 @@ let trans_equation map (lhs, rhs) =
   let map', lhs' = trans_pattern map lhs in
   let eqs, rhs' = trans_expr map' rhs in
 
-  (map', eqs @ lhs' (base_expr rhs'))
+  (map', eqs @ [ (lhs', base_expr rhs') ])
 
 let trans_step { step_name; step_input; step_output; step_def } =
   counter := 0;
-  let in_var = new_var ~prefix:"input" () in
-  let map, input_cont = trans_pattern [] step_input in
-  let input_eqs = input_cont (evar in_var step_input.pat_ty) in
+  let map, input_pat = trans_pattern [] step_input in
   let map', def' = List.fold_left_map trans_equation map step_def in
   let eqs', output = trans_output map' step_output in
-  let body = (input_eqs @ List.flatten def' @ eqs', output) in
-  step step_name
-    (pvar in_var step_input.pat_ty)
-    step_output.pat_ty body !counter
+  let body = (List.flatten def' @ eqs', output) in
+  step step_name input_pat step_output.pat_ty body !counter
 
 let trans_proto { proto_name; proto_input; proto_output } =
-  let _, input_cont = trans_pattern [] proto_input in
-  let input_pat =
-    match input_cont () with
-    | [ (p, _) ] -> p
-    | _ -> assert false
-  in
-  proto proto_name input_pat proto_output.pat_ty
+  proto proto_name proto_input proto_output.pat_ty
 
 let f pack =
   package pack.pack_name

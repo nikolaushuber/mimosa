@@ -55,7 +55,9 @@ let pp_machine ppf m =
      %a@]@\n\
      @[<2>reset:@;\
      %a@]@\n\
-     @[<2>inputs:@;\
+     @[<2>input:@;\
+     %a@]@\n\
+     @[<2>locals:@;\
      %a@]@\n\
      @[<v>body:@;\
      <1 2>%a@]@\n"
@@ -65,16 +67,15 @@ let pp_machine ppf m =
     (list ~sep:comma (pair ~sep:Norm_printer.colon string Lident.pp))
     m.instances
     (list ~sep:(fun ppf _ -> pf ppf ";@;<1 2>") pp_instr)
-    m.reset
+    m.reset Norm_printer.pp_pattern m.input
     (list ~sep:comma (pair ~sep:Norm_printer.colon string Type.pp))
-    m.inputs
+    m.locals
     (list ~sep:(fun ppf _ -> pf ppf ";@;<1 2>") pp_instr)
     m.def
 
 let pp_proto ppf p =
-  pf ppf "@[@[<2>proto@;%s@]@\n@[<2>inputs:@;%a@]@\n@]@\n" p.proto_name
-    (list ~sep:comma (pair ~sep:Norm_printer.colon string Type.pp))
-    p.proto_inputs
+  pf ppf "@[@[<2>proto@;%s@]@\n@[<2>input:@;%a@]@\n@]@\n" p.proto_name Type.pp
+    p.proto_input
 
 let pp_items pp ppf l =
   pf ppf "@[<v0>%a@]" (list ~sep:(fun ppf _ -> pf ppf "@\n") pp) l

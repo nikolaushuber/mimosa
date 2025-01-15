@@ -66,70 +66,54 @@ let rec trans_eq (m, l, si, j, s) (lhs, rhs) =
       in
       (m', l', si', j', s @ [ either v e1 s_e2 ])
   | ((PVar _ | PUnit | PAny) as eq_lhs), EApp (f, a) ->
-      let o = new_var ~prefix:"X" () in
-      let lhs =
+      let o = new_var ~prefix:"x" () in
+      let lhs, l' =
         match eq_lhs with
-        | PVar v -> Some v
-        | PUnit | PAny -> None
+        | PVar v -> (Some v, (v, lhs.pat_ty) :: l)
+        | PUnit | PAny -> (None, l)
         | PTuple _ -> assert false
       in
       let s' = s @ [ step_app lhs f [ a ] o ] in
-      (m, l, reset f o :: si, (o, f) :: j, s')
+      (m, l', reset f o :: si, (o, f) :: j, s')
   | PTuple ps, ETuple es ->
-      let tys =
-        match lhs.pat_ty with
-        | TTuple tys -> tys
-        | _ -> assert false
-      in
-      assert (List.length ps = List.length es);
-      let eqs =
-        List.map2
-          (fun (p, e) ty -> assign p (evar e ty))
-          (List.combine ps es) tys
-      in
-      (m, List.combine ps tys @ l, si, j, s @ eqs)
+      let tys = List.map (fun p -> p.pat_ty) ps in
+      let eqs = List.map2 Norm_builder.evar es tys in
+      List.fold_left trans_eq (m, l, si, j, s) (List.combine ps eqs)
   | PTuple ps, _ ->
       let var = new_var () in
-      let tys =
-        match lhs.pat_ty with
-        | TTuple tys -> tys
-        | _ -> assert false
-      in
+      let tys = List.map (fun p -> p.pat_ty) ps in
       let m', l', si', j', s' =
         trans_eq (m, l, si, j, s) (Norm_builder.pvar var lhs.pat_ty, rhs)
       in
-      (m', List.combine ps tys @ l', si', j', s' @ [ tuple_destr ps var ])
+      let eqs, lhs' =
+        List.fold_left_map
+          (fun acc p ->
+            match p.pat_desc with
+            | PAny | PUnit -> (acc, "unused")
+            | PVar v -> (acc, v)
+            | PTuple _ ->
+                let tmp = new_var () in
+                (acc @ [ (p, Norm_builder.evar tmp p.pat_ty) ], tmp))
+          [] ps
+      in
+      let acc' =
+        (m', List.combine lhs' tys @ l', si', j', s' @ [ tuple_destr lhs' var ])
+      in
+      List.fold_left trans_eq acc' eqs
   | PVar v, EBase e ->
       (m, (v, lhs.pat_ty) :: l, si, j, s @ [ assign v (trans_expr m e) ])
   | _ -> assert false
-
-let trans_param pat =
-  match pat.pat_desc with
-  | PAny | PUnit ->
-      let var = new_var ~prefix:"unused" () in
-      [ param var pat.pat_ty ]
-  | PVar v -> [ param v pat.pat_ty ]
-  | PTuple vs ->
-      let tys =
-        match pat.pat_ty with
-        | TTuple tys -> tys
-        | _ -> assert false
-      in
-      List.map2 param vs tys
 
 let trans_step (name, input, ret_ty, def, state) =
   counter := state;
   let eqs, ret = def in
   let m, l, si, j, s = List.fold_left trans_eq ([], [], [], [], []) eqs in
   let ret_var = new_var ~prefix:"return_val" () in
-  let inputs = trans_param input in
   let self = new_var ~prefix:"self" () in
   let s' = s @ [ assign ret_var (trans_expr m ret); return ret_var ] in
-  machine name inputs ((ret_var, ret_ty) :: l) m j si ret_ty self s'
+  machine name input ((ret_var, ret_ty) :: l) m j si ret_ty self s'
 
-let trans_proto (name, input, ret_ty) =
-  let inputs = trans_param input in
-  proto name inputs ret_ty
+let trans_proto (name, input, ret_ty) = proto name input.pat_ty ret_ty
 
 let f p =
   package p.pack_name
