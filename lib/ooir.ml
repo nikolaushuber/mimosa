@@ -45,6 +45,7 @@ type item = Machine of machine | Proto of proto
 
 type t = {
   pack_name : string;
+  pack_dependencies : string list;
   pack_protos : proto list;
   pack_machines : machine list;
 }

@@ -397,6 +397,37 @@ let ty_item genv (lenv, acc_protos, acc_steps) item =
   | Ppack_node _ -> failwith "not yet implemented"
   | Ppack_link _ -> failwith "not yet implemented"
 
+let deps_of_id acc = function
+  | Lident.Lident _ -> acc
+  | Ldot (p, _) -> String.Set.add p acc
+
+let rec deps_of_expr acc e =
+  match e.pexpr_desc with
+  | Pexpr_ident id -> deps_of_id acc id.txt
+  | Pexpr_none | Pexpr_constant _ -> acc
+  | Pexpr_pre e | Pexpr_some e | Pexpr_unop (_, e) -> deps_of_expr acc e
+  | Pexpr_binop (_, e1, e2)
+  | Pexpr_either (e1, e2)
+  | Pexpr_fby (e1, e2)
+  | Pexpr_apply (e1, e2)
+  | Pexpr_arrow (e1, e2) ->
+      deps_of_expr (deps_of_expr acc e1) e2
+  | Pexpr_tuple es -> List.fold_left deps_of_expr acc es
+  | Pexpr_ite (e1, e2, e3) ->
+      deps_of_expr (deps_of_expr (deps_of_expr acc e1) e2) e3
+
+let deps_of_eq acc (_, e) = deps_of_expr acc e
+let deps_of_step s = List.fold_left deps_of_eq String.Set.empty s.pstep_def
+
+let deps_of_item acc item =
+  match item.ppack_item with
+  | Ppack_step s -> String.Set.union acc (deps_of_step s)
+  | _ -> acc
+
+let deps_of_pack p =
+  List.fold_left deps_of_item String.Set.empty p.ppack_items
+  |> String.Set.to_list
+
 let ty_pack genv pack =
   let name = pack.ppack_name.txt in
   let items = pack.ppack_items in
@@ -404,7 +435,8 @@ let ty_pack genv pack =
     fold_left (ty_item genv) (Env.empty, [], []) items
   in
   let genv = String.Map.add name lenv genv in
-  let pack = package name protos steps [] [] in
+  let deps = deps_of_pack pack in
+  let pack = package name deps protos steps [] [] in
   (genv, pack) |> ok
 
 let f (d : Ptree.t list) : Ttree.t list Reserr.t =

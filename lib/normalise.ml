@@ -200,6 +200,6 @@ let trans_proto { proto_name; proto_input; proto_output } =
   proto proto_name proto_input proto_output.pat_ty
 
 let f pack =
-  package pack.pack_name
+  package pack.pack_name pack.pack_dependencies
     (List.map trans_proto pack.pack_protos)
     (List.map trans_step pack.pack_steps)

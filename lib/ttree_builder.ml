@@ -58,5 +58,13 @@ let step step_name step_input step_output step_def =
 let proto proto_name proto_input proto_output =
   { proto_name; proto_input; proto_output }
 
-let package pack_name pack_protos pack_steps pack_links pack_nodes =
-  { pack_name; pack_steps; pack_protos; pack_links; pack_nodes }
+let package pack_name pack_dependencies pack_protos pack_steps pack_links
+    pack_nodes =
+  {
+    pack_name;
+    pack_dependencies;
+    pack_steps;
+    pack_protos;
+    pack_links;
+    pack_nodes;
+  }

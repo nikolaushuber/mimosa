@@ -164,4 +164,4 @@ let trans_pack pack gcache =
 
 let f (d : t list) : t list Reserr.t =
   let* d', _ = fold_right_map trans_pack d String.Map.empty in
-  d' |> ok
+  d' |> List.rev |> ok

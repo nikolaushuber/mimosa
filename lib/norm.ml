@@ -36,6 +36,7 @@ type proto = string * pat * Type.t
 
 type t = {
   pack_name : string;
+  pack_dependencies : string list;
   pack_steps : step list;
   pack_protos : proto list;
 }

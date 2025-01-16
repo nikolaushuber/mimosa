@@ -133,7 +133,7 @@ let rec trans_instr = function
       pexp_send (pexp_ident (noloc (trans_id id))) (noloc "reset")
   | Return s -> pexp_apply (evar "!") [ (Nolabel, evar s) ]
   | If (c, t, e) ->
-      pexp_ifthenelse (evar c)
+      pexp_ifthenelse (eapply (evar "!") [ evar c ])
         (List.map trans_instr t |> eseq)
         (Some (List.map trans_instr e |> eseq))
   | StepApp (lhs, _, args, self) -> (
@@ -283,13 +283,29 @@ let gen_make p =
     in
     pmod_functor funct_param inner_mod_expr
   in
+  let mod_expr_with_deps =
+    List.fold_left
+      (fun expr dep ->
+        let funct_param =
+          Named
+            ( noloc (Option.some dep),
+              pmty_ident (noloc (Ldot (lident dep, "Intf"))) )
+        in
+        pmod_functor funct_param expr)
+      mod_expr p.pack_dependencies
+  in
   let mod_bind =
-    module_binding ~name:(noloc (Option.some "Make")) ~expr:mod_expr
+    module_binding ~name:(noloc (Option.some "Make")) ~expr:mod_expr_with_deps
   in
   pstr_module mod_bind
 
 let trans_package p =
+  let name = p.pack_name in
   let proto_intf = gen_proto_ty p.pack_protos in
   let pack_intf = gen_intf_ty p in
   let make_functor = gen_make p in
-  [ proto_intf; pack_intf; make_functor ]
+  let mod_expr = pmod_structure [ proto_intf; pack_intf; make_functor ] in
+  let mod_bind =
+    module_binding ~name:(noloc (Option.some name)) ~expr:mod_expr
+  in
+  [ pstr_module mod_bind ]

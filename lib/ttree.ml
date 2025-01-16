@@ -62,6 +62,7 @@ type node = unit
 
 type t = {
   pack_name : string;
+  pack_dependencies : string list;
   pack_protos : proto list;
   pack_steps : step list;
   pack_links : link list;

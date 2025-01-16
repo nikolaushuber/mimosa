@@ -32,5 +32,5 @@ let block vb e : block = (vb, e)
 let step name inp ret_ty e state = (name, inp, ret_ty, e, state)
 let proto name inp ret_ty = (name, inp, ret_ty)
 
-let package pack_name pack_protos pack_steps =
-  { pack_name; pack_protos; pack_steps }
+let package pack_name pack_dependencies pack_protos pack_steps =
+  { pack_name; pack_dependencies; pack_protos; pack_steps }
