@@ -124,7 +124,8 @@ package:
 toplevel_def:
     | s = step { pack_step s }
     | p = proto { pack_proto p }
-    | n = node { pack_node ~loc:(to_loc $loc) n }
+    | n = node { pack_node n }
+    | l = link { pack_link l }
 
 step:
     |   "step"
@@ -145,6 +146,14 @@ proto:
         rs = simple_pattern
     {
         proto ~loc:(to_loc $loc) name ps rs
+    }
+
+link:
+    | "channel" name = TK_LSTRING ":" ty = ty {
+        channel ~loc:(to_loc $loc) name ty
+    }
+    | "register" name = TK_LSTRING ":" ty = ty "=" e = literal_constant{
+        register ~loc:(to_loc $loc) name ty e
     }
 
 node:

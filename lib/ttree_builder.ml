@@ -58,6 +58,11 @@ let step step_name step_input step_output step_def =
 let proto proto_name proto_input proto_output =
   { proto_name; proto_input; proto_output }
 
+let channel name ty = { link_name = name; link_ty = ty; link_desc = Channel }
+
+let register name ty value =
+  { link_name = name; link_ty = ty; link_desc = Register value }
+
 let package pack_name pack_dependencies pack_protos pack_steps pack_links
     pack_nodes =
   {

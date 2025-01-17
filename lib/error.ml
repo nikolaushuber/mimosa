@@ -16,6 +16,7 @@ type t =
   | Unbound_value of string
   | Missing_type_in_proto
   | Typevar_in_proto
+  | Typevar_in_link
 
 open Fmt
 
@@ -66,3 +67,6 @@ let pp ppf = function
   | Typevar_in_proto ->
       pf ppf "%a@\n%a" text "Type variable in external step" text
         "Externally defined steps cannot use type variables in their signature"
+  | Typevar_in_link ->
+      pf ppf "%a@\n%a" text "Type variable in link definition" text
+        "Links must use monomorphic types"

@@ -67,8 +67,12 @@ let node ?(loc = noloc) pnode_name pnode_implements pnode_inputs pnode_outputs
 let link ?(loc = noloc) plink_name plink_desc =
   { plink_name; plink_desc; plink_loc = loc }
 
-let channel ty = Plink_channel ty
-let register ty e = Plink_register (ty, e)
+let channel ?(loc = noloc) name ty =
+  { plink_name = name; plink_desc = Plink_channel ty; plink_loc = loc }
+
+let register ?(loc = noloc) name ty e =
+  { plink_name = name; plink_desc = Plink_register (ty, e); plink_loc = loc }
+
 let package_item ?(loc = noloc) ppack_item = { ppack_item; ppack_loc = loc }
 
 let pack_step ?(loc = noloc) step =
@@ -80,5 +84,7 @@ let pack_proto ?(loc = noloc) proto =
 let pack_node ?(loc = noloc) node =
   { ppack_item = Ppack_node node; ppack_loc = loc }
 
-let pack_link link = Ppack_link link
+let pack_link ?(loc = noloc) link =
+  { ppack_item = Ppack_link link; ppack_loc = loc }
+
 let package ppack_name ppack_items = { ppack_name; ppack_items }

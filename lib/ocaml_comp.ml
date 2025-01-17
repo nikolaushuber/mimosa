@@ -133,7 +133,8 @@ let rec trans_instr = function
       pexp_send (pexp_ident (noloc (trans_id id))) (noloc "reset")
   | Return s -> pexp_apply (evar "!") [ (Nolabel, evar s) ]
   | If (c, t, e) ->
-      pexp_ifthenelse (eapply (evar "!") [ evar c ])
+      pexp_ifthenelse
+        (eapply (evar "!") [ evar c ])
         (List.map trans_instr t |> eseq)
         (Some (List.map trans_instr e |> eseq))
   | StepApp (lhs, _, args, self) -> (
@@ -165,12 +166,14 @@ let gen_proto_sig proto =
   psig_value val_desc
 
 let gen_proto_ty protos =
-  let vals = List.map gen_proto_sig protos in
-  let mod_typ =
-    module_type_declaration ~name:(noloc "Protos")
-      ~type_:(Some (pmty_signature vals))
-  in
-  pstr_modtype mod_typ
+  match List.map gen_proto_sig protos with
+  | [] -> []
+  | vals ->
+      let mod_typ =
+        module_type_declaration ~name:(noloc "Extern")
+          ~type_:(Some (pmty_signature vals))
+      in
+      [ pstr_modtype mod_typ ]
 
 let class_ty name in_ty out_ty =
   let class_sig =
@@ -219,7 +222,7 @@ let gen_proto_obj p =
           pcf_method
             ( noloc "run",
               Public,
-              Cfk_concrete (Fresh, pexp_ident (noloc (Ldot (lident "P", name))))
+              Cfk_concrete (Fresh, pexp_ident (noloc (Ldot (lident "E", name))))
             );
           pcf_method
             (noloc "reset", Public, Cfk_concrete (Fresh, [%expr fun () -> ()]));
@@ -279,7 +282,8 @@ let gen_make p =
   in
   let mod_expr =
     let funct_param =
-      Named (noloc (Option.some "P"), pmty_ident (noloc (lident "Protos")))
+      if p.pack_protos = [] then Unit
+      else Named (noloc (Option.some "E"), pmty_ident (noloc (lident "Extern")))
     in
     pmod_functor funct_param inner_mod_expr
   in
@@ -304,7 +308,7 @@ let trans_package p =
   let proto_intf = gen_proto_ty p.pack_protos in
   let pack_intf = gen_intf_ty p in
   let make_functor = gen_make p in
-  let mod_expr = pmod_structure [ proto_intf; pack_intf; make_functor ] in
+  let mod_expr = pmod_structure (proto_intf @ [ pack_intf; make_functor ]) in
   let mod_bind =
     module_binding ~name:(noloc (Option.some name)) ~expr:mod_expr
   in

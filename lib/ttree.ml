@@ -57,8 +57,20 @@ type step = {
 }
 
 type proto = { proto_name : string; proto_input : pat; proto_output : pat }
-type link = unit
-type node = unit
+
+type link = { link_name : string; link_ty : Type.t; link_desc : link_desc }
+and link_desc = Channel | Register of expr
+
+type node = {
+  node_name : string;
+  node_implements : Lident.t;
+  node_inputs : port list;
+  node_outputs : node list;
+  node_period : period;
+}
+
+and port = { port_name : Lident.t; port_aync : bool }
+and period = int * Ptree.time_unit
 
 type t = {
   pack_name : string;
