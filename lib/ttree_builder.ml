@@ -13,7 +13,7 @@ let ptuple pats =
 let mk_expr expr_desc expr_ty = { expr_desc; expr_ty }
 let evar id ty = mk_expr (EVar id) ty
 let eint i = mk_expr (EConst (CInt i)) TInt
-let ereal r = mk_expr (EConst (CReal r)) TReal
+let efloat f = mk_expr (EConst (CFloat f)) TFloat
 let ebool b = mk_expr (EConst (CBool b)) TBool
 let eunit () = mk_expr (EConst CUnit) TUnit
 let eunop op e ty = mk_expr (EUnOp (op, e)) ty
@@ -58,18 +58,7 @@ let step step_name step_input step_output step_def =
 let proto proto_name proto_input proto_output =
   { proto_name; proto_input; proto_output }
 
-let channel name ty = { link_name = name; link_ty = ty; link_desc = Channel }
+let channel channel_name channel_ty channel_elems =
+  { channel_name; channel_ty; channel_elems }
 
-let register name ty value =
-  { link_name = name; link_ty = ty; link_desc = Register value }
-
-let package pack_name pack_dependencies pack_protos pack_steps pack_links
-    pack_nodes =
-  {
-    pack_name;
-    pack_dependencies;
-    pack_steps;
-    pack_protos;
-    pack_links;
-    pack_nodes;
-  }
+let package protos steps channels nodes = { protos; steps; channels; nodes }

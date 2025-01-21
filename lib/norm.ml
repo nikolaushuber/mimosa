@@ -13,7 +13,6 @@ type base_expr = { base_expr_desc : base_expr_desc; base_expr_ty : Type.t }
 and base_expr_desc =
   | EConst of Ttree.const
   | EVar of string
-  | EGlobalVar of Lident.t
   | EUnOp of Ttree.unop * string
   | EBinOp of Ttree.binop * string * string
   | ENone
@@ -25,7 +24,7 @@ and expr_desc =
   | EBase of base_expr
   | EEither of string * block
   | EIf of string * block * block
-  | EApp of Lident.t * string
+  | EApp of string * string
   | EFby of string * block
   | ETuple of string list
 

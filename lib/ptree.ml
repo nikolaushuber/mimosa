@@ -2,134 +2,125 @@
 
 type 'a loc = 'a Location.loc
 
-type core_type = { ptype_desc : core_type_desc; ptype_loc : Location.t }
+type core_type = { type_desc : core_type_desc; type_loc : Location.t }
 
 and core_type_desc =
-  | Ptype_var of string
-  | Ptype_tuple of core_type list
-  | Ptype_option of core_type
-  | Ptype_int
-  | Ptype_bool
-  | Ptype_real
+  | Type_var of string
+  | Type_tuple of core_type list
+  | Type_option of core_type
+  | Type_int
+  | Type_bool
+  | Type_float
 
 type pattern = {
-  ppat_desc : pattern_desc;
-  ppat_ty : core_type option;
-  ppat_loc : Location.t;
+  pat_desc : pattern_desc;
+  pat_ty : core_type option;
+  pat_loc : Location.t;
 }
 
 and pattern_desc =
-  | Ppat_any
-  | Ppat_unit
-  | Ppat_var of string loc
-  | Ppat_tuple of pattern list
+  | Pat_any
+  | Pat_unit
+  | Pat_var of string loc
+  | Pat_tuple of pattern list
 
 type constant =
-  | Pconst_int of int
-  | Pconst_real of float
-  | Pconst_bool of bool
-  | Pconst_unit
+  | Const_int of int
+  | Const_float of float
+  | Const_bool of bool
+  | Const_unit
 
-type unop = { punop_desc : unop_desc; punop_loc : Location.t }
-and unop_desc = Punop_not | Punop_neg | Punop_rneg | Punop_is_some
+type unop = { unop_desc : unop_desc; unop_loc : Location.t }
+and unop_desc = Unop_not | Unop_neg | Unop_fneg | Unop_is_some
 
-type binop = { pbinop_desc : binop_desc; pbinop_loc : Location.t }
+type binop = { binop_desc : binop_desc; binop_loc : Location.t }
 
 and binop_desc =
-  | Pbinop_and (* Boolean operators *)
-  | Pbinop_or
-  | Pbinop_implies
-  | Pbinop_add (* Integer operators *)
-  | Pbinop_sub
-  | Pbinop_mul
-  | Pbinop_div
-  | Pbinop_radd (* Real operators *)
-  | Pbinop_rsub
-  | Pbinop_rmul
-  | Pbinop_rdiv
-  | Pbinop_eq (* Polymorphic comparison operators *)
-  | Pbinop_neq
-  | Pbinop_lt (* Integer comparison operators *)
-  | Pbinop_leq
-  | Pbinop_gt
-  | Pbinop_geq
-  | Pbinop_rlt (* Real comparison operators *)
-  | Pbinop_rleq
-  | Pbinop_rgt
-  | Pbinop_rgeq
+  | Binop_and (* Boolean operators *)
+  | Binop_or
+  | Binop_implies
+  | Binop_add (* Integer operators *)
+  | Binop_sub
+  | Binop_mul
+  | Binop_div
+  | Binop_fadd (* Float operators *)
+  | Binop_fsub
+  | Binop_fmul
+  | Binop_fdiv
+  | Binop_eq (* Polymorphic comparison operators *)
+  | Binop_neq
+  | Binop_lt (* Integer comparison operators *)
+  | Binop_leq
+  | Binop_gt
+  | Binop_geq
+  | Binop_flt (* Float comparison operators *)
+  | Binop_fleq
+  | Binop_fgt
+  | Binop_fgeq
 
-type expression = { pexpr_desc : expr_desc; pexpr_loc : Location.t }
+type expression = { expr_desc : expr_desc; expr_loc : Location.t }
 
 and expr_desc =
-  | Pexpr_ident of Lident.t loc
-  | Pexpr_constant of constant
-  | Pexpr_unop of unop * expression
-  | Pexpr_binop of binop * expression * expression
-  | Pexpr_either of expression * expression
-  | Pexpr_tuple of expression list
-  | Pexpr_ite of expression * expression * expression
-  | Pexpr_apply of expression * expression
-  | Pexpr_arrow of expression * expression
-  | Pexpr_fby of expression * expression
-  | Pexpr_pre of expression
-  | Pexpr_none
-  | Pexpr_some of expression
+  | Expr_ident of string
+  | Expr_constant of constant
+  | Expr_unop of unop * expression
+  | Expr_binop of binop * expression * expression
+  | Expr_either of expression * expression
+  | Expr_tuple of expression list
+  | Expr_ite of expression * expression * expression
+  | Expr_apply of expression * expression
+  | Expr_arrow of expression * expression
+  | Expr_fby of expression * expression
+  | Expr_pre of expression
+  | Expr_none
+  | Expr_some of expression
 
 type step = {
-  pstep_name : string loc;
-  pstep_input : pattern;
-  pstep_output : pattern;
-  pstep_def : (pattern * expression) list;
-  pstep_loc : Location.t;
+  step_name : string loc;
+  step_input : pattern;
+  step_output : pattern;
+  step_def : (pattern * expression) list;
+  step_loc : Location.t;
 }
 
 type proto = {
-  pproto_name : string loc;
-  pproto_input : pattern;
-  pproto_output : pattern;
-  pproto_loc : Location.t;
+  proto_name : string loc;
+  proto_input : pattern;
+  proto_output : pattern;
+  proto_loc : Location.t;
 }
 
-type port = {
-  pport_name : Lident.t loc;
-  pport_async : bool;
-  pport_loc : Location.t;
-}
-
+type port = { port_name : string loc; port_async : bool; port_loc : Location.t }
 type time_unit = Ms
 
 type period = {
-  pperiod_time : int;
-  pperiod_unit : time_unit;
-  pperiod_loc : Location.t;
+  period_time : int;
+  period_unit : time_unit;
+  period_loc : Location.t;
 }
 
 type node = {
-  pnode_name : string loc;
-  pnode_implements : Lident.t loc;
-  pnode_inputs : port list;
-  pnode_outputs : port list;
-  pnode_period : period;
-  pnode_loc : Location.t;
+  node_name : string loc;
+  node_implements : string loc;
+  node_inputs : port list;
+  node_outputs : port list;
+  node_period : period;
+  node_loc : Location.t;
 }
 
-type link = {
-  plink_name : string;
-  plink_desc : link_desc;
-  plink_loc : Location.t;
+type channel = {
+  channel_name : string;
+  channel_type : core_type;
+  channel_elems : expression list;
+  channel_loc : Location.t;
 }
 
-and link_desc =
-  | Plink_channel of core_type
-  | Plink_register of core_type * expression
+type item = { item_desc : item_desc; item_loc : Location.t }
 
-type package_item = { ppack_item : package_item_desc; ppack_loc : Location.t }
+and item_desc =
+  | Step of step
+  | Proto of proto
+  | Node of node
+  | Channel of channel
 
-and package_item_desc =
-  | Ppack_step of step
-  | Ppack_proto of proto
-  | Ppack_node of node
-  | Ppack_link of link
-
-type package = { ppack_name : string loc; ppack_items : package_item list }
-type t = package
+type t = item list

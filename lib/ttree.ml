@@ -3,7 +3,7 @@ open Type
 type pat = { pat_desc : pat_desc; pat_ty : Type.t }
 and pat_desc = PAny | PUnit | PVar of string | PTuple of pat list
 
-type const = CUnit | CInt of int | CReal of float | CBool of bool
+type const = CUnit | CInt of int | CFloat of float | CBool of bool
 type unop = Not | Neg | RNeg | IsSome
 
 type binop =
@@ -14,25 +14,25 @@ type binop =
   | Sub
   | Mul
   | Div
-  | RAdd
-  | RSub
-  | RMul
-  | RDiv
+  | FAdd
+  | FSub
+  | FMul
+  | FDiv
   | Eq
   | Neq
   | Lt
   | Leq
   | Gt
   | Geq
-  | RLt
-  | RLeq
-  | RGt
-  | RGeq
+  | FLt
+  | FLeq
+  | FGt
+  | FGeq
 
 type expr = { expr_desc : expr_desc; expr_ty : Type.t }
 
 and expr_desc =
-  | EVar of Lident.t
+  | EVar of string
   | EConst of const
   | EUnOp of unop * expr
   | EBinOp of binop * expr * expr
@@ -40,14 +40,11 @@ and expr_desc =
   | ETuple of expr list
   | EIf of expr * expr * expr
   | EApp of expr * expr
-  | EMatch of expr * case list
   | EArrow of expr * expr
   | EFby of expr * expr
   | EPre of expr
   | ENone
   | ESome of expr
-
-and case = { lhs : pat; rhs : expr }
 
 type step = {
   step_name : string;
@@ -58,25 +55,26 @@ type step = {
 
 type proto = { proto_name : string; proto_input : pat; proto_output : pat }
 
-type link = { link_name : string; link_ty : Type.t; link_desc : link_desc }
-and link_desc = Channel | Register of expr
+type channel = {
+  channel_name : string;
+  channel_ty : Type.t;
+  channel_elems : expr list;
+}
 
 type node = {
   node_name : string;
-  node_implements : Lident.t;
+  node_implements : string;
   node_inputs : port list;
   node_outputs : node list;
   node_period : period;
 }
 
-and port = { port_name : Lident.t; port_aync : bool }
+and port = { port_name : string; port_aync : bool }
 and period = int * Ptree.time_unit
 
 type t = {
-  pack_name : string;
-  pack_dependencies : string list;
-  pack_protos : proto list;
-  pack_steps : step list;
-  pack_links : link list;
-  pack_nodes : node list;
+  protos : proto list;
+  steps : step list;
+  channels : channel list;
+  nodes : node list;
 }

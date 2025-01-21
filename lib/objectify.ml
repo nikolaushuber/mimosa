@@ -15,12 +15,11 @@ let trans_const c =
   | CUnit -> econst c TUnit
   | CInt _ -> econst c TInt
   | CBool _ -> econst c TBool
-  | CReal _ -> econst c TReal
+  | CFloat _ -> econst c TFloat
 
 let trans_expr m e =
   match e.base_expr_desc with
   | EConst c -> trans_const c
-  | EGlobalVar id -> eglobal_const id e.base_expr_ty
   | EVar v when List.mem_assoc v m -> estate_var v e.base_expr_ty
   | EVar v -> evar v e.base_expr_ty
   | EUnOp (op, e') -> eunop op e' e.base_expr_ty

@@ -19,7 +19,7 @@ let rec pp_pat : pat Fmt.t =
 let pp_const ppf = function
   | CUnit -> string ppf "()"
   | CInt i -> int ppf i
-  | CReal r -> float ppf r
+  | CFloat f -> float ppf f
   | CBool b -> bool ppf b
 
 let pp_unop ppf = function
@@ -36,24 +36,24 @@ let pp_binop ppf = function
   | Sub -> string ppf "-"
   | Mul -> string ppf "*"
   | Div -> string ppf "/"
-  | RAdd -> string ppf "+."
-  | RSub -> string ppf "-."
-  | RMul -> string ppf "*."
-  | RDiv -> string ppf "/."
+  | FAdd -> string ppf "+."
+  | FSub -> string ppf "-."
+  | FMul -> string ppf "*."
+  | FDiv -> string ppf "/."
   | Eq -> string ppf "=="
   | Neq -> string ppf "!="
   | Lt -> string ppf "<"
   | Leq -> string ppf "<="
   | Gt -> string ppf ">"
   | Geq -> string ppf ">="
-  | RLt -> string ppf "<."
-  | RLeq -> string ppf "<=."
-  | RGt -> string ppf ">."
-  | RGeq -> string ppf ">=."
+  | FLt -> string ppf "<."
+  | FLeq -> string ppf "<=."
+  | FGt -> string ppf ">."
+  | FGeq -> string ppf ">=."
 
 let rec pp_expr ppf expr =
   match expr.expr_desc with
-  | EVar id -> Lident.pp ppf id
+  | EVar id -> string ppf id
   | EConst c -> pp_const ppf c
   | EUnOp (op, e) -> pf ppf "@[%a%a@]" pp_unop op pp_expr e
   | EBinOp (op, e1, e2) ->
@@ -64,7 +64,6 @@ let rec pp_expr ppf expr =
       pf ppf "@[if@;<1 2>%a@;<1 0>then@;<1 2>%a@;<1 0>else@;<1 2>%a@;<0 0>@]"
         pp_expr c pp_expr t pp_expr e
   | EApp (e1, e2) -> pf ppf "%a@ (%a)" pp_expr e1 pp_expr e2
-  | EMatch _ -> failwith "not yet implemented"
   | EArrow (e1, e2) -> pf ppf "@[%a@ -> %a@]" pp_expr e1 pp_expr e2
   | EFby (e1, e2) -> pf ppf "@[%a@ fby %a@]" pp_expr e1 pp_expr e2
   | EPre e -> pf ppf "pre %a" pp_expr e
@@ -83,9 +82,9 @@ let pp_proto ppf p =
   pf ppf "step %s %a --> %a" p.proto_name (parens pp_pat) p.proto_input
     (parens pp_pat) p.proto_output
 
-let pp ppf pack =
-  pf ppf "@[<v>package %s@;@;%a@;%a@]" pack.pack_name
+let pp ppf { protos; steps; _ } =
+  pf ppf "@[<v>%a@;%a@]"
     (list ~sep:(cut ++ cut) pp_proto)
-    pack.pack_protos
+    protos
     (list ~sep:(cut ++ cut) pp_step)
-    pack.pack_steps
+    steps

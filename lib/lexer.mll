@@ -34,32 +34,30 @@ rule tokenize = parse
     | "-" { TK_SUB }
     | "*" { TK_MUL }
     | "/" { TK_DIV }
-    | "+." { TK_RADD }
-    | "-." { TK_RSUB }
-    | "*." { TK_RMUL }
-    | "/." { TK_RDIV }
+    | "+." { TK_FADD }
+    | "-." { TK_FSUB }
+    | "*." { TK_FMUL }
+    | "/." { TK_FDIV }
     | "==" { TK_EQ }
     | "!=" { TK_NEQ }
     | "<" { TK_LT }
     | "<=" { TK_LEQ }
     | ">" { TK_GT }
     | ">=" { TK_GEQ }
-    | "<." { TK_RLT }
-    | "<=." { TK_RLEQ }
-    | ">." { TK_RGT }
-    | ">=." { TK_RGEQ }
+    | "<." { TK_FLT }
+    | "<=." { TK_FLEQ }
+    | ">." { TK_FGT }
+    | ">=." { TK_FGEQ }
     | "->" { TK_ARROW }
     | "fby" { TK_FBY }
 
     (* Keywords *)
-    | "package" { TK_PACKAGE }
     | "step" { TK_STEP }
     | "if" { TK_IF }
     | "then" { TK_THEN }
     | "else" { TK_ELSE }
     | "channel" { TK_CHANNEL }
     | "node" { TK_NODE }
-    | "register" { TK_REGISTER }
     | "implements" { TK_IMPLEMENTS }
     | "every" { TK_EVERY }
     | "ms" { TK_MS }
@@ -70,7 +68,7 @@ rule tokenize = parse
     (* Types *)
     | "int" { TK_TY_INT }
     | "bool" { TK_TY_BOOL }
-    | "real" { TK_TY_REAL }
+    | "float" { TK_TY_FLOAT }
 
     (* Constants *)
     | "true" { TK_BOOL true }
@@ -79,8 +77,7 @@ rule tokenize = parse
     | "Some" { TK_SOME }
     | "_" { TK_ANY }
     | integer as i { TK_INT (int_of_string i) }
-    | lower_ident as id { TK_LSTRING id }
-    | upper_ident as id { TK_USTRING id }
+    | lower_ident as id { TK_STRING id }
 
     (* Others *)
     | "(" { TK_LPAREN }
@@ -91,7 +88,6 @@ rule tokenize = parse
     | "=" { TK_ASSIGN }
     | ";" { TK_SEMI }
     | ":" { TK_COLON }
-    | "." { TK_DOT }
     | eof { TK_EOF }
     | _ as e {
         let open Error in

@@ -2,7 +2,7 @@ module rec Type : sig
   type t =
     | TUnit
     | TBool
-    | TReal
+    | TFloat
     | TInt
     | TTuple of t list
     | TOption of t
@@ -20,7 +20,7 @@ end = struct
   type t =
     | TUnit
     | TBool
-    | TReal
+    | TFloat
     | TInt
     | TTuple of t list
     | TOption of t
@@ -28,7 +28,7 @@ end = struct
     | TVar of int
 
   let rec ftv = function
-    | TUnit | TBool | TReal | TInt -> Int.Set.empty
+    | TUnit | TBool | TFloat | TInt -> Int.Set.empty
     | TTuple tup ->
         List.fold_left
           (fun acc t -> Int.Set.union acc (ftv t))
@@ -46,7 +46,7 @@ end = struct
     | TUnit -> TUnit
     | TInt -> TInt
     | TBool -> TBool
-    | TReal -> TReal
+    | TFloat -> TFloat
     | TTuple ts -> TTuple (List.map (apply s) ts)
     | TOption t -> TOption (apply s t)
 
@@ -61,7 +61,7 @@ end = struct
 
   let minimise t =
     let rec aux acc = function
-      | TUnit | TInt | TBool | TReal -> acc
+      | TUnit | TInt | TBool | TFloat -> acc
       | TVar n -> (
           match Int.Map.find_opt n acc with
           | None ->
@@ -105,7 +105,7 @@ end = struct
     function
     | TUnit -> string ppf "unit"
     | TBool -> string ppf "bool"
-    | TReal -> string ppf "real"
+    | TFloat -> string ppf "real"
     | TInt -> string ppf "int"
     | TTuple ts -> pf ppf "(%a)" (list ~sep:(fun ppf _ -> pf ppf " * ") pp) ts
     | TOption t -> pf ppf "%a?" pp t
@@ -125,7 +125,7 @@ end = struct
     | TUnit -> Atom "unit"
     | TInt -> Atom "int"
     | TBool -> Atom "bool"
-    | TReal -> Atom "real"
+    | TFloat -> Atom "real"
     | TTuple ts -> List (insert_stars (List.map sexp_of ts))
     | TOption t -> List [ sexp_of t; Atom "?" ]
     | TFunc (t1, t2) -> List [ sexp_of t1; Atom "->"; sexp_of t2 ]

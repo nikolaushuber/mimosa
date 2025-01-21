@@ -11,10 +11,10 @@ open Ptree
 let vars_of_pat ?(init_map = String.Map.empty) =
   let open Reserr in
   let rec aux ((set, loc_map) as acc) pat =
-    match pat.ppat_desc with
-    | Ppat_any -> ok acc
-    | Ppat_unit -> ok acc
-    | Ppat_var name ->
+    match pat.pat_desc with
+    | Pat_any -> ok acc
+    | Pat_unit -> ok acc
+    | Pat_var name ->
         if String.Map.mem name.txt loc_map then
           let first_loc = String.Map.find name.txt loc_map in
           let err = Error.Local_symbol_redef (name.txt, first_loc) in
@@ -22,17 +22,17 @@ let vars_of_pat ?(init_map = String.Map.empty) =
         else
           (String.Set.add name.txt set, String.Map.add name.txt name.loc loc_map)
           |> ok
-    | Ppat_tuple pats -> Reserr.fold_left aux acc pats
+    | Pat_tuple pats -> Reserr.fold_left aux acc pats
   in
   aux (String.Set.empty, init_map)
 
 let rec check_any_in_output pat =
   let open Reserr in
-  match pat.ppat_desc with
-  | Ppat_unit | Ppat_var _ -> ok ()
-  | Ppat_tuple ps -> fold_left (fun () -> check_any_in_output) () ps
-  | Ppat_any ->
-      let loc = pat.ppat_loc in
+  match pat.pat_desc with
+  | Pat_unit | Pat_var _ -> ok ()
+  | Pat_tuple ps -> fold_left (fun () -> check_any_in_output) () ps
+  | Pat_any ->
+      let loc = pat.pat_loc in
       let err = Error.Output_any in
       error (err, loc)
 
@@ -40,30 +40,27 @@ let rec check_any_in_output pat =
 let vars_used_by_expr =
   let open Reserr in
   let rec aux set expr =
-    match expr.pexpr_desc with
-    | Pexpr_ident id -> (
-        match id.txt with
-        | Lident s -> String.Set.add s set |> ok
-        | Ldot _ -> ok set)
-    | Pexpr_constant _ -> ok set
-    | Pexpr_unop (_, e) | Pexpr_pre e -> aux set e
-    | Pexpr_binop (_, e1, e2)
-    | Pexpr_fby (e1, e2)
-    | Pexpr_arrow (e1, e2)
-    | Pexpr_either (e1, e2) ->
+    match expr.expr_desc with
+    | Expr_ident id -> String.Set.add id set |> ok
+    | Expr_constant _ -> ok set
+    | Expr_unop (_, e) | Expr_pre e -> aux set e
+    | Expr_binop (_, e1, e2)
+    | Expr_fby (e1, e2)
+    | Expr_arrow (e1, e2)
+    | Expr_either (e1, e2) ->
         fold_left aux set [ e1; e2 ]
-    | Pexpr_apply (_, e) -> aux set e
-    | Pexpr_tuple es -> fold_left aux set es
-    | Pexpr_ite (e1, e2, e3) -> fold_left aux set [ e1; e2; e3 ]
-    | Pexpr_none -> ok set
-    | Pexpr_some e -> aux set e
+    | Expr_apply (_, e) -> aux set e
+    | Expr_tuple es -> fold_left aux set es
+    | Expr_ite (e1, e2, e3) -> fold_left aux set [ e1; e2; e3 ]
+    | Expr_none -> ok set
+    | Expr_some e -> aux set e
   in
   aux String.Set.empty
 
 let order_step step =
   let open Reserr in
-  let* in_set, init_map = vars_of_pat step.pstep_input in
-  let* out_set, out_map = vars_of_pat ~init_map step.pstep_output in
+  let* in_set, init_map = vars_of_pat step.step_input in
+  let* out_set, out_map = vars_of_pat ~init_map step.step_output in
 
   (* For each equation, find out which symbols are defined and used *)
   let* defs, uses =
@@ -72,7 +69,7 @@ let order_step step =
       let* uses = vars_used_by_expr e in
       (map', (defs, uses) :: list) |> ok
     in
-    let* _, defs_uses = fold_left aux (init_map, []) step.pstep_def in
+    let* _, defs_uses = fold_left aux (init_map, []) step.step_def in
     List.rev defs_uses |> List.split |> ok
   in
 
@@ -80,7 +77,7 @@ let order_step step =
   let all_defs = List.fold_left String.Set.union String.Set.empty defs in
 
   (* does the output use any patterns? *)
-  let* _ = check_any_in_output step.pstep_output in
+  let* _ = check_any_in_output step.step_output in
 
   (* Are all outputs defined? *)
   let missing_outs = String.Set.diff out_set all_defs in
@@ -127,27 +124,7 @@ let order_step step =
         | ErrorCycle list ->
             let names = List.map (Fun.flip List.assoc rev_map) list in
             let err = Error.Cycle_in_equations names in
-            error (err, step.pstep_loc)
+            error (err, step.step_loc)
       in
 
-      { step with pstep_def = List.map (List.nth step.pstep_def) sorted } |> ok
-
-let order_item item =
-  let open Reserr in
-  let* item' =
-    match item.ppack_item with
-    | Ppack_step s ->
-        let* s' = order_step s in
-        Ppack_step s' |> ok
-    | Ppack_proto p -> Ppack_proto p |> ok
-    | Ppack_node n -> Ppack_node n |> ok
-    | Ppack_link l -> Ppack_link l |> ok
-  in
-  { item with ppack_item = item' } |> ok
-
-let order_pack p =
-  let open Reserr in
-  let* ppack_items' = map order_item p.ppack_items in
-  { p with ppack_items = ppack_items' } |> ok
-
-let f d = Reserr.map order_pack d
+      { step with step_def = List.map (List.nth step.step_def) sorted } |> ok

@@ -11,23 +11,19 @@ let rec dummy_val =
   let open Type in
   function
   | TInt -> eint 0
-  | TReal -> efloat "0.0"
+  | TFloat -> efloat "0.0"
   | TBool -> ebool false
   | TUnit -> eunit
   | TOption _ -> pexp_construct (noloc (lident "None")) None
   | TFunc _ | TVar _ -> assert false
   | TTuple tys -> pexp_tuple (List.map dummy_val tys)
 
-let trans_id = function
-  | Lident.Lident s -> lident s
-  | Ldot (p, s) -> Ldot (lident p, s)
-
 let rec trans_type ty =
   let open Type in
   match ty with
   | TInt -> [%type: int]
   | TBool -> [%type: bool]
-  | TReal -> [%type: float]
+  | TFloat -> [%type: float]
   | TUnit -> [%type: unit]
   | TTuple tys ->
       let tys' = List.map trans_type tys in
@@ -58,7 +54,7 @@ let trans_const c =
   match c with
   | CBool b -> ebool b
   | CInt i -> eint i
-  | CReal f -> efloat (string_of_float f)
+  | CFloat f -> efloat (string_of_float f)
   | CUnit -> eunit
 
 let trans_unop op s =
@@ -81,23 +77,22 @@ let trans_binop op s1 s2 =
   | Sub -> [%expr [%e e1] - [%e e2]]
   | Mul -> [%expr [%e e1] * [%e e2]]
   | Div -> [%expr [%e e1] / [%e e2]]
-  | RAdd -> [%expr [%e e1] +. [%e e2]]
-  | RSub -> [%expr [%e e1] -. [%e e2]]
-  | RMul -> [%expr [%e e1] *. [%e e2]]
-  | RDiv -> [%expr [%e e1] /. [%e e2]]
+  | FAdd -> [%expr [%e e1] +. [%e e2]]
+  | FSub -> [%expr [%e e1] -. [%e e2]]
+  | FMul -> [%expr [%e e1] *. [%e e2]]
+  | FDiv -> [%expr [%e e1] /. [%e e2]]
   | Eq -> [%expr [%e e1] = [%e e2]]
   | Neq -> [%expr [%e e1] <> [%e e2]]
-  | Lt | RLt -> [%expr [%e e1] < [%e e2]]
-  | Leq | RLeq -> [%expr [%e e1] <= [%e e2]]
-  | Gt | RGt -> [%expr [%e e1] > [%e e2]]
-  | Geq | RGeq -> [%expr [%e e1] >= [%e e2]]
+  | Lt | FLt -> [%expr [%e e1] < [%e e2]]
+  | Leq | FLeq -> [%expr [%e e1] <= [%e e2]]
+  | Gt | FGt -> [%expr [%e e1] > [%e e2]]
+  | Geq | FGeq -> [%expr [%e e1] >= [%e e2]]
 
 let trans_expr e =
   match e.expr_desc with
   | Var s -> eapply (evar "!") [ evar s ]
   | StateVar s -> evar s
   | Const c -> trans_const c
-  | GlobalConst id -> pexp_ident (noloc (trans_id id))
   | None -> pexp_construct (noloc (lident "None")) None
   | Some s -> pexp_construct (noloc (lident "Some")) (Some (evar s))
   | UnOp (op, s) -> trans_unop op s
@@ -129,8 +124,7 @@ let rec trans_instr = function
         |> eseq
       in
       pexp_let Nonrecursive [ binding ] assign_expr
-  | Reset (id, _) ->
-      pexp_send (pexp_ident (noloc (trans_id id))) (noloc "reset")
+  | Reset (id, _) -> pexp_send (evar id) (noloc "reset")
   | Return s -> pexp_apply (evar "!") [ (Nolabel, evar s) ]
   | If (c, t, e) ->
       pexp_ifthenelse
@@ -236,7 +230,7 @@ let gen_proto_obj p =
 
 let gen_instance_field (name, id) =
   pcf_val
-    (noloc name, Immutable, Cfk_concrete (Fresh, pexp_new (noloc (trans_id id))))
+    (noloc name, Immutable, Cfk_concrete (Fresh, pexp_new (noloc (lident id))))
 
 let gen_run_method m =
   let local_refs =

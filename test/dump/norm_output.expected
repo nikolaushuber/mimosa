@@ -1,31 +1,29 @@
 package Norm
 
 
-step test (input_0 : (bool * bool * bool * bool))
-  cond_1 : bool, init_2 : bool, signal_3 : bool, default_4 : bool = input_0
-  tmp_6 : bool = cond_1
-  tmp_13 : bool =
-    if tmp_6
+step test (cond_0 : bool, init_1 : bool, signal_2 : bool, default_3 : bool)
+  tmp_5 : bool = cond_0
+  tmp_12 : bool =
+    if tmp_5
     then
-      tmp_7 : bool = false
-      tmp_8 : bool = signal_3
-      tmp_9 : bool = tmp_7 fby tmp_8
-      tmp_10 : bool = init_2
-      tmp_11 : bool = tmp_9
-      tmp_12 : bool = tmp_10 fby tmp_11
-      in tmp_12
-    else default_4
-  out_5 : bool = tmp_13
-  in out_5
+      tmp_6 : bool = false
+      tmp_7 : bool = signal_2
+      tmp_8 : bool = tmp_6 fby tmp_7
+      tmp_9 : bool = init_1
+      tmp_10 : bool = tmp_8
+      tmp_11 : bool = tmp_9 fby tmp_10
+      in tmp_11
+    else default_3
+  out_4 : bool = tmp_12
+  in out_4
 
-step test2 (input_0 : (bool * bool))
-  init_1 : bool, signal_2 : bool = input_0
-  tmp_4 : bool = false
-  tmp_5 : bool = signal_2
-  tmp_6 : bool = tmp_4 fby tmp_5
-  tmp_7 : bool = init_1
-  tmp_8 : bool = tmp_6
-  tmp_9 : bool = tmp_7 fby tmp_8
-  out_3 : bool = tmp_9
-  in out_3
+step test2 (init_0 : bool, signal_1 : bool)
+  tmp_3 : bool = false
+  tmp_4 : bool = signal_1
+  tmp_5 : bool = tmp_3 fby tmp_4
+  tmp_6 : bool = init_0
+  tmp_7 : bool = tmp_5
+  tmp_8 : bool = tmp_6 fby tmp_7
+  out_2 : bool = tmp_8
+  in out_2
 

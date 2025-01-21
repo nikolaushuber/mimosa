@@ -1,3 +1,3 @@
 open Cmdliner
 
-let files = Arg.(non_empty & pos_all file [] & info [] ~docv:"FILES")
+let file = Arg.(required & pos 0 (some file) None & info [] ~docv:"FILE")

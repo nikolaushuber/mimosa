@@ -1,154 +1,91 @@
 open Cmdliner
 open Mimosa
 
-let main_dump_ptree files =
+let main_dump_ptree file =
   let open Reserr in
   let open Fmt in
-  pp false (list Ptree_printer.pp) stdout (map Parse.f files)
+  pp false Ptree_printer.pp stdout (Parse.f file)
 
 let ptree =
   Cmd.(
     v
-      (info "ptree" ~doc:"Dump the parsetree.")
-      Term.(const main_dump_ptree $ Args.files))
+      (info "ptree" ~doc:"Dump parsetree.")
+      Term.(const main_dump_ptree $ Args.file))
 
-let main_pack_dep files =
+let main_order file =
   let open Reserr in
   let open Fmt in
-  pp false (list string) stdout
-    (map Parse.f files
-    >>= Global_odering.f
-    >>= map (fun p -> p.Ptree.ppack_name.txt |> ok))
-
-let packdep =
-  Cmd.(
-    v
-      (info "packdep" ~doc:"Dump package order after dependency resolution.")
-      Term.(const main_pack_dep $ Args.files))
-
-let main_eqorder files =
-  let open Reserr in
-  let open Fmt in
-  pp false (list Ptree_printer.pp) stdout
-    (map Parse.f files >>= Global_odering.f >>= Eq_ordering.f)
+  pp false Ordering.pp stdout (Parse.f file >>= Ordering.f)
 
 let eqorder =
   Cmd.(
     v
-      (info "eqorder" ~doc:"Dump parsetree after equation ordering.")
-      Term.(const main_eqorder $ Args.files))
+      (info "eqorder" ~doc:"Dump parsetree after ordering.")
+      Term.(const main_order $ Args.file))
 
-let main_dump_ttree files =
+let main_dump_ttree file =
   let open Reserr in
   let open Fmt in
-  pp false (list Ttree_printer.pp) stdout
-    (map Parse.f files
-    >>= Global_odering.f
-    >>= Eq_ordering.f
-    >>= Local_ordering.f
-    >>= Typecheck.f)
+  pp false Ttree_printer.pp stdout (Parse.f file >>= Ordering.f >>= Typecheck.f)
 
 let ttree =
   Cmd.(
     v
       (info "ttree" ~doc:"Dump AST after type checking.")
-      Term.(const main_dump_ttree $ Args.files))
+      Term.(const main_dump_ttree $ Args.file))
 
-let main_mono files =
+let main_mono file =
   let open Reserr in
   let open Fmt in
-  pp false (list Ttree_printer.pp) stdout
-    (map Parse.f files
-    >>= Global_odering.f
-    >>= Eq_ordering.f
-    >>= Local_ordering.f
+  Ttree_printer.pp stdout
+    (Parse.f file
+    >>= Ordering.f
     >>= Typecheck.f
-    >>= Monomorphise.f)
+    |> Reserr.unpack
+    |> Monomorphise.f)
 
 let mono =
   Cmd.(
     v
       (info "mono" ~doc:"Dump AST after monomorphisation.")
-      Term.(const main_mono $ Args.files))
+      Term.(const main_mono $ Args.file))
 
-let main_norm files =
+let main_norm file =
   let open Reserr in
   let open Fmt in
-  (list Norm_printer.pp) stdout
-    (map Parse.f files
-    >>= Global_odering.f
-    >>= Eq_ordering.f
-    >>= Local_ordering.f
+  Norm_printer.pp stdout
+    (Parse.f file
+    >>= Ordering.f
     >>= Typecheck.f
-    >>= Monomorphise.f
     |> Reserr.unpack
-    |> List.map Normalise.f)
+    |> Monomorphise.f
+    |> Normalise.f)
 
 let norm =
   Cmd.(
     v
       (info "norm" ~doc:"Dump AST after normalisation.")
-      Term.(const main_norm $ Args.files))
+      Term.(const main_norm $ Args.file))
 
-let main_ooir files =
+let main_ocaml file =
   let open Reserr in
   let open Fmt in
-  (list Ooir_printer.pp) stdout
-    (map Parse.f files
-    >>= Global_odering.f
-    >>= Eq_ordering.f
-    >>= Local_ordering.f
+  pf stdout "@[<v>%a@]@." Ppxlib_ast.Pprintast.structure
+    (Parse.f file
+    >>= Ordering.f
     >>= Typecheck.f
-    >>= Monomorphise.f
     |> Reserr.unpack
-    |> List.map Normalise.f
-    |> List.map Objectify.f)
-
-let ooir =
-  Cmd.(
-    v (info "ooir" ~doc:"Dump object IR.") Term.(const main_ooir $ Args.files))
-
-(* let main_c files =
-  let open Reserr in
-  let open Fmt in
-  C_printer.pp stdout
-    (map Parse.f files
-    >>= Global_odering.f
-    >>= Eq_ordering.f
-    >>= Local_ordering.f
-    >>= Typecheck.f
-    >>= Monomorphise.f
-    |> Reserr.unpack
-    |> List.map Normalise.f
-    |> List.map Objectify.f
-    |> Ccomp.f)
-
-let c = Cmd.(v (info "c" ~doc:"Dump C code.") Term.(const main_c $ Args.files)) *)
-
-let main_ocaml files =
-  let open Reserr in
-  let open Fmt in
-  pf stdout "@[<v>%a@]@."
-    (list Ppxlib_ast.Pprintast.structure)
-    (map Parse.f files
-    >>= Global_odering.f
-    >>= Eq_ordering.f
-    >>= Local_ordering.f
-    >>= Typecheck.f
-    >>= Monomorphise.f
-    |> Reserr.unpack
-    |> List.map Normalise.f
-    |> List.map Objectify.f
-    |> List.map Ocaml_comp.trans_package)
+    |> Monomorphise.f
+    |> Normalise.f
+    |> Objectify.f
+    |> Ocaml_comp.trans_package)
 
 let ocaml =
   Cmd.(
-    v
-      (info "ocaml" ~doc:"Dump OCaml code.")
-      Term.(const main_ocaml $ Args.files))
+    v (info "ocaml" ~doc:"Dump OCaml code.") Term.(const main_ocaml $ Args.file))
 
 let cmd =
   let doc = "Dump tool for debugging information." in
   let info = Cmd.info "dump" ~doc in
-  let cmds = [ ptree; packdep; eqorder; ttree; mono; norm; ooir; ocaml ] in
+  let cmds = [ ptree; eqorder; ttree; mono; norm; ocaml ] in
   Cmd.group info cmds

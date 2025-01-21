@@ -1,19 +1,17 @@
-package Type_infer
 
-
-step test_and (a : bool, b : bool) --> (c : bool)
+step fst (a : ('a * 'b)) --> (b : 'a)
 {
-  c : bool = a && b
+  b : 'a, _ : 'b = a
 }
 
-step test_add (a : int, b : int) --> (c : int)
+step test_mul (a : int, b : int) --> (c : int)
 {
-  c : int = a + b
+  c : int = a * b
 }
 
-step test_if (a : bool, b : 'a, c : 'a) --> (d : 'a)
+step test_not (a : bool) --> (b : bool)
 {
-  d : 'a = if a then b else c
+  b : bool = ~a
 }
 
 step add_tup (a : (int * int)) --> (b : int)
@@ -23,17 +21,17 @@ step add_tup (a : (int * int)) --> (b : int)
   b : int = c + d
 }
 
-step test_not (a : bool) --> (b : bool)
+step test_if (a : bool, b : 'a, c : 'a) --> (d : 'a)
 {
-  b : bool = ~a
+  d : 'a = if a then b else c
 }
 
-step test_mul (a : int, b : int) --> (c : int)
+step test_add (a : int, b : int) --> (c : int)
 {
-  c : int = a * b
+  c : int = a + b
 }
 
-step fst (a : ('a * 'b)) --> (b : 'a)
+step test_and (a : bool, b : bool) --> (c : bool)
 {
-  b : 'a, _ : 'b = a
+  c : bool = a && b
 }

@@ -6,7 +6,6 @@ let pp_expr ppf e =
   | Var s -> string ppf s
   | StateVar s -> pf ppf "!%s" s
   | Const c -> Ttree_printer.pp_const ppf c
-  | GlobalConst id -> Lident.pp ppf id
   | None -> string ppf "None"
   | Some s -> pf ppf "@[Some@;%s@]" s
   | UnOp (op, e) -> pf ppf "%a %s" Ttree_printer.pp_unop op e
@@ -20,7 +19,7 @@ let rec pp_instr ppf = function
       pf ppf "@[<2>%s@;<1 2>=@;%a@]" lhs (list ~sep:comma string) rhs
   | TupleDestr (lhs, rhs) ->
       pf ppf "@[<2>%a@;<1 2>=@;%s@]" (list ~sep:comma string) lhs rhs
-  | Reset (f, self) -> pf ppf "%a.reset( %s )" Lident.pp f self
+  | Reset (f, self) -> pf ppf "%a.reset( %s )" string f self
   | Return s -> pf ppf "@[<2>return@;%s@]" s
   | If (c, t, e) ->
       let fmt : (_, _, _) format =
@@ -29,10 +28,10 @@ let rec pp_instr ppf = function
       let pp_list = list ~sep:(fun ppf _ -> pf ppf ";@;<1 2>") pp_instr in
       pf ppf fmt c pp_list t pp_list e
   | StepApp (None, f, args, self) ->
-      pf ppf "@[<2>%a@;(@;%a,@ %s@;<1 -2>)@]" Lident.pp f
-        (list ~sep:comma string) args self
+      pf ppf "@[<2>%a@;(@;%a,@ %s@;<1 -2>)@]" string f (list ~sep:comma string)
+        args self
   | StepApp (Some v, f, args, self) ->
-      pf ppf "@[<2>%s@;=@;%a@;(@;%a,@ %s@;<1 -2>)@]" v Lident.pp f
+      pf ppf "@[<2>%s@;=@;%a@;(@;%a,@ %s@;<1 -2>)@]" v string f
         (list ~sep:comma string) args self
   | Either (lhs, e1, e2) ->
       let pp_either ppf (lhs, e) =
@@ -64,7 +63,7 @@ let pp_machine ppf m =
     m.name
     (list ~sep:comma (pair ~sep:Norm_printer.colon string Type.pp))
     m.memory
-    (list ~sep:comma (pair ~sep:Norm_printer.colon string Lident.pp))
+    (list ~sep:comma (pair ~sep:Norm_printer.colon string string))
     m.instances
     (list ~sep:(fun ppf _ -> pf ppf ";@;<1 2>") pp_instr)
     m.reset Norm_printer.pp_pattern m.input

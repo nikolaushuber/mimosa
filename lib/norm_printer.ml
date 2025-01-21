@@ -8,7 +8,6 @@ let pp_base_expr ppf e =
   match e.base_expr_desc with
   | EConst c -> Ttree_printer.pp_const ppf c
   | EVar v -> string ppf v
-  | EGlobalVar id -> Lident.pp ppf id
   | EUnOp (op, e) -> pf ppf "%a@ %s" Ttree_printer.pp_unop op e
   | EBinOp (op, e1, e2) ->
       pf ppf "@[<2>%s@;%a@;%s@]" e1 Ttree_printer.pp_binop op e2
@@ -28,7 +27,7 @@ let rec pp_expr ppf e =
         "@[<hv0>@[<2>if@ %s@]@;@[<2>then@ %a@]@;@[<2>else@;%a@]@]"
       in
       pf ppf fmt c pp_block t pp_block e
-  | EApp (f, e) -> pf ppf "@[<2>%a@;%a@]" Lident.pp f string e
+  | EApp (f, e) -> pf ppf "@[<2>%a@;%a@]" string f string e
   | EFby (e1, e2) -> pf ppf "@[<2>%s@;fby@;%a@]" e1 pp_block e2
   | ETuple es ->
       pf ppf "@[<hov2>(%a)@]" (list ~sep:(fun ppf _ -> pf ppf ",@;") string) es

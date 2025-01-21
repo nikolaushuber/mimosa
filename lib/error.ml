@@ -9,10 +9,7 @@ type t =
   | Input_unused of string
   | Cycle_in_steps of string list
   | Cycle_in_equations of string list
-  | Cycle_in_packages of string list
-  | Package_redefinition of string
   | Unification of string * string
-  | Unbound_package of string
   | Unbound_value of string
   | Missing_type_in_proto
   | Typevar_in_proto
@@ -51,15 +48,10 @@ let pp ppf = function
         names
   | Cycle_in_equations names ->
       pf ppf "Dependency between symbols: @[%a@]" (list ~sep:comma string) names
-  | Package_redefinition name -> pf ppf "Multiple packages with name %s" name
-  | Cycle_in_packages names ->
-      pf ppf "Cyclic dependency between packages: @[%a@]"
-        (list ~sep:comma string) names
   | Unification (t1, t2) ->
       pf ppf
         "This expression has type %s, but an expression of type %s was expected"
         t2 t1
-  | Unbound_package name -> pf ppf "Undefined package %s" name
   | Unbound_value name -> pf ppf "Unknown name %s" name
   | Missing_type_in_proto ->
       pf ppf "%a@\n%a" text "Missing type annotation" text

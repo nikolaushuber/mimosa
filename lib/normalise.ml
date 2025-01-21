@@ -1,4 +1,4 @@
-(** Translate typed AST to k-normal form *)
+(* * Translate typed AST to k-normal form
 
 open Ttree
 open Norm_builder
@@ -202,4 +202,6 @@ let trans_proto { proto_name; proto_input; proto_output } =
 let f pack =
   package pack.pack_name pack.pack_dependencies
     (List.map trans_proto pack.pack_protos)
-    (List.map trans_step pack.pack_steps)
+    (List.map trans_step pack.pack_steps) *)
+
+let f _ = failwith "normalisation not yet implemented"

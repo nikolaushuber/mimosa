@@ -9,7 +9,7 @@ module Cache = struct
   let add = String.Map.add
   let find_opt = String.Map.find_opt
 
-  let get_name cache name ty =
+  let get_name (cache : t) name ty =
     match ty with
     | Type.TFunc _ -> (
         match find_opt name cache with
@@ -29,61 +29,49 @@ module Cache = struct
       (Type.Map.pp Fmt.string)
 end
 
-let rec cache_expr ((gcache, lcache) as acc) expr =
+let rec cache_expr cache expr =
   let acc', desc' =
     match expr.expr_desc with
-    | EVar v -> (
-        match v with
-        | Lident f ->
-            let v', lcache' = Cache.get_name lcache f expr.expr_ty in
-            ((gcache, lcache'), EVar (Lident v'))
-        | Ldot (p, v) -> (
-            match Cache.find_opt p gcache with
-            | None ->
-                let v', cache' = Cache.get_name Cache.empty v expr.expr_ty in
-                ((String.Map.add p cache' gcache, lcache), EVar (Ldot (p, v')))
-            | Some cache ->
-                let v', cache' = Cache.get_name cache v expr.expr_ty in
-                ((String.Map.add p cache' gcache, lcache), EVar (Ldot (p, v'))))
-        )
-    | EConst c -> (acc, EConst c)
-    | ENone -> (acc, ENone)
+    | EVar f ->
+        let v', cache' = Cache.get_name cache f expr.expr_ty in
+        (cache', EVar v')
+    | EConst c -> (cache, EConst c)
+    | ENone -> (cache, ENone)
     | EPre e ->
-        let acc', e' = cache_expr acc e in
+        let acc', e' = cache_expr cache e in
         (acc', EPre e')
     | ESome e ->
-        let acc', e' = cache_expr acc e in
+        let acc', e' = cache_expr cache e in
         (acc', ESome e')
     | EUnOp (op, e) ->
-        let acc', e' = cache_expr acc e in
+        let acc', e' = cache_expr cache e in
         (acc', EUnOp (op, e'))
     | EBinOp (op, e1, e2) ->
-        let acc', e1' = cache_expr acc e1 in
+        let acc', e1' = cache_expr cache e1 in
         let acc'', e2' = cache_expr acc' e2 in
         (acc'', EBinOp (op, e1', e2'))
     | EEither (e1, e2) ->
-        let acc', e1' = cache_expr acc e1 in
+        let acc', e1' = cache_expr cache e1 in
         let acc'', e2' = cache_expr acc' e2 in
         (acc'', EEither (e1', e2'))
     | EFby (e1, e2) ->
-        let acc', e1' = cache_expr acc e1 in
+        let acc', e1' = cache_expr cache e1 in
         let acc'', e2' = cache_expr acc' e2 in
         (acc'', EFby (e1', e2'))
     | EArrow (e1, e2) ->
-        let acc', e1' = cache_expr acc e1 in
+        let acc', e1' = cache_expr cache e1 in
         let acc'', e2' = cache_expr acc' e2 in
         (acc'', EArrow (e1', e2'))
     | EIf (c, t, e) ->
-        let acc', c' = cache_expr acc c in
+        let acc', c' = cache_expr cache c in
         let acc'', t' = cache_expr acc' t in
         let acc''', e' = cache_expr acc'' e in
         (acc''', EIf (c', t', e'))
-    | EMatch _ -> failwith "not yet implemented"
     | ETuple es ->
-        let acc', es' = List.fold_left_map cache_expr acc es in
+        let acc', es' = List.fold_left_map cache_expr cache es in
         (acc', ETuple es')
     | EApp (e1, e2) ->
-        let acc', e1' = cache_expr acc e1 in
+        let acc', e1' = cache_expr cache e1 in
         let acc'', e2' = cache_expr acc' e2 in
         (acc'', EApp (e1', e2'))
   in
@@ -102,7 +90,7 @@ let cache_step acc step =
 let subst_bool t : Type.Subst.t =
   let open Type in
   let rec aux acc = function
-    | TUnit | TInt | TBool | TReal -> acc
+    | TUnit | TInt | TBool | TFloat -> acc
     | TOption t -> aux acc t
     | TTuple ts -> List.fold_left aux acc ts
     | TVar n -> Subst.compose (Int.Map.singleton n TBool) acc
@@ -146,22 +134,15 @@ let duplicate_step (lcache : Cache.t) step =
       let tys = Type.Map.to_list map in
       List.map (fun (ty, name) -> specialise_step name ty step) tys |> sequence
 
-let trans_step step ((_, lcache) as acc) =
-  let* steps = duplicate_step lcache step in
-  let acc', steps' = List.fold_left_map cache_step acc steps in
+let trans_step step cache =
+  let* steps = duplicate_step cache step in
+  let acc', steps' = List.fold_left_map cache_step cache steps in
   (steps', acc') |> ok
 
-let trans_pack pack gcache =
-  let lcache =
-    match String.Map.find_opt pack.pack_name gcache with
-    | Some cache -> cache
-    | None -> Cache.empty
-  in
-  let cache = (gcache, lcache) in
-  let* steps', (_, lcache') = fold_right_map trans_step pack.pack_steps cache in
-  let gcache' = String.Map.add pack.pack_name lcache' gcache in
-  ({ pack with pack_steps = List.concat (List.rev steps') }, gcache') |> ok
+let trans_pack pack =
+  let* steps', _ = fold_right_map trans_step pack.steps Cache.empty in
+  { pack with steps = List.concat (List.rev steps') |> List.rev } |> ok
 
-let f (d : t list) : t list Reserr.t =
-  let* d', _ = fold_right_map trans_pack d String.Map.empty in
-  d' |> List.rev |> ok
+let f (d : Ttree.t) : Ttree.t =
+  let d' = trans_pack d in
+  d' |> Reserr.unpack

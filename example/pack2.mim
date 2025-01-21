@@ -1,4 +1,0 @@
-step random_int () --> (out : int)
-{
-    out = if Random.random () then 1 else 0;
-}
