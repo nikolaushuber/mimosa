@@ -83,7 +83,7 @@ let pp_proto ppf p =
     (parens pp_pat) p.proto_output
 
 let pp ppf { protos; steps; _ } =
-  pf ppf "@[<v>%a@;%a@]"
+  pf ppf "@[<v>%a@;%a@]@."
     (list ~sep:(cut ++ cut) pp_proto)
     protos
     (list ~sep:(cut ++ cut) pp_step)

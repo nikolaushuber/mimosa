@@ -41,10 +41,4 @@ and expr_desc =
   | BinOp of Ttree.binop * string * string
 
 type item = Machine of machine | Proto of proto
-
-type t = {
-  pack_name : string;
-  pack_dependencies : string list;
-  pack_protos : proto list;
-  pack_machines : machine list;
-}
+type t = { protos : proto list; machines : machine list }

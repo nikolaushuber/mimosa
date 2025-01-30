@@ -113,8 +113,4 @@ let trans_step (name, input, ret_ty, def, state) =
   machine name input ((ret_var, ret_ty) :: l) m j si ret_ty self s'
 
 let trans_proto (name, input, ret_ty) = proto name input.pat_ty ret_ty
-
-let f p =
-  package p.pack_name p.pack_dependencies
-    (List.map trans_proto p.pack_protos)
-    (List.map trans_step p.pack_steps)
+let f p = package (List.map trans_proto p.protos) (List.map trans_step p.steps)

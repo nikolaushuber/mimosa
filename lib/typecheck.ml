@@ -1,3 +1,12 @@
+(* Typechecking
+   Invariants which must hold at this point:
+    - Equations are topologically ordered
+    - No causality cycles between equations
+    - No mutually recursive dependencies between steps
+    - Each symbol is only defined once
+    - Each output is defined by an equation
+*)
+
 open Ordering
 open Ptree
 open Type
@@ -10,15 +19,6 @@ let next_state () =
   let n = !state in
   incr state;
   n
-
-let lookup_id loc env name =
-  match Env.find_opt name env with
-  | Some s ->
-      let t = Scheme.instantiate s state in
-      (Subst.empty, t) |> ok
-  | None ->
-      let err = Error.Unbound_value name in
-      error (err, loc)
 
 let rec ty_expr env expr =
   match expr.expr_desc with
@@ -37,6 +37,15 @@ let rec ty_expr env expr =
   | Expr_some e -> ty_some env e
 
 and ty_ident loc env id =
+  let lookup_id loc env name =
+    match Env.find_opt name env with
+    | Some s ->
+        let t = Scheme.instantiate s state in
+        (Subst.empty, t) |> ok
+    | None ->
+        let err = Error.Unbound_value name in
+        error (err, loc)
+  in
   let* s, ty = lookup_id loc env id in
   (s, ty, evar id ty) |> ok
 
@@ -280,15 +289,12 @@ let rec ty_pattern ?(proto = false) env map p =
       in
       (lenv', map', TTuple (List.rev tys), ptuple (List.rev pats)) |> ok
 
-let ty_eq env map eq =
-  let lhs, rhs = eq in
-  let* s1, rhs_ty, rhs' = ty_expr env rhs in
-  let* env', map', lhs_ty, lhs' = ty_pattern (Env.apply s1 env) map lhs in
-  let* s2 = unify ~loc:rhs.expr_loc lhs_ty rhs_ty in
-  let eq' = (lhs', rhs') in
+let ty_eq env (lhs_ty, p, e) =
+  let* s1, rhs_ty, e' = ty_expr env e in
+  let* s2 = unify ~loc:e.expr_loc lhs_ty rhs_ty in
   let s = Subst.compose s2 s1 in
-  let lenv'' = Env.apply s2 env' in
-  (s, lenv'', map', eq') |> ok
+  let lenv'' = Env.apply s2 env in
+  (s, lenv'', (p, e')) |> ok
 
 let rec apply_subst_expr s expr =
   let open Ttree in
@@ -329,28 +335,39 @@ let apply_subst_eq s (lhs, rhs) = (apply_subst_pat s lhs, apply_subst_expr s rhs
 
 let ty_step env step =
   state := 0;
-  let* lenv', map, ty1, p1 = ty_pattern env String.Map.empty step.step_input in
-  let* lenv'', map', ty2, p2 = ty_pattern lenv' map step.step_output in
+
+  let* env', map, ty_inp, pat_inp =
+    ty_pattern env String.Map.empty step.step_input
+  in
+  let* env'', map', ty_out, pat_out = ty_pattern env' map step.step_output in
+
+  let* (env''', map''), eqs =
+    fold_left_map
+      (fun (env, map) (lhs, rhs) ->
+        let* env', map', ty_lhs, pat_lhs = ty_pattern env map lhs in
+        ((env', map'), (ty_lhs, pat_lhs, rhs)) |> ok)
+      (env'', map') step.step_def
+  in
 
   let rec aux env map = function
     | [] -> (Subst.empty, []) |> ok
     | eq :: eqs ->
-        let* s, env', map', eq' = ty_eq env map eq in
-        let* sr, eqs' = aux (Env.apply s env') map' eqs in
+        let* s, env', eq' = ty_eq env eq in
+        let* sr, eqs' = aux (Env.apply s env') map eqs in
         (Subst.compose sr s, eq' :: eqs') |> ok
   in
 
-  let* s, eqs = aux lenv'' map' step.step_def in
+  let* s, eqs = aux env''' map'' eqs in
 
-  let ty = TFunc (apply s ty1, apply s ty2) in
+  let ty = TFunc (apply s ty_inp, apply s ty_out) in
   let s_min = minimise ty in
   let ty_min = apply s_min ty in
   let s = Subst.compose s_min s in
   let def = List.map (apply_subst_eq s) eqs in
 
   let name = step.step_name.txt in
-  let input = apply_subst_pat s p1 in
-  let output = apply_subst_pat s p2 in
+  let input = apply_subst_pat s pat_inp in
+  let output = apply_subst_pat s pat_out in
 
   let env' = Env.add env name (generalize Env.empty ty_min) in
 
@@ -390,19 +407,6 @@ let ty_link env l =
   let* ty' = ty_core_type l.channel_type in
   let env' = String.Map.add name ty' env in
   (env', channel name ty') |> ok
-
-(* let ty_item genv (lenv, acc_protos, acc_steps, acc_links, acc_nodes) item =
-  match item.ppack_item with
-  | Ppack_step s ->
-      let* lenv', step = ty_step env s in
-      (lenv', acc_protos, step :: acc_steps, acc_links, acc_nodes) |> ok
-  | Ppack_proto p ->
-      let* lenv', proto = ty_proto lenv p in
-      (lenv', proto :: acc_protos, acc_steps, acc_links, acc_nodes) |> ok
-  | Ppack_node _ -> (lenv, acc_protos, acc_steps, acc_links, acc_nodes) |> ok
-  | Ppack_link l ->
-      let* lenv', link = ty_link lenv l in
-      (lenv', acc_protos, acc_steps, link :: acc_links, acc_nodes) |> ok *)
 
 let ty_pack pack =
   let* env, protos = fold_left_map ty_proto Env.empty pack.protos in

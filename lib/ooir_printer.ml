@@ -80,5 +80,5 @@ let pp_items pp ppf l =
   pf ppf "@[<v0>%a@]" (list ~sep:(fun ppf _ -> pf ppf "@\n") pp) l
 
 let pp ppf p =
-  pf ppf "@[<v>@[package %s@]@;@;%a@;%a@]" p.pack_name (pp_items pp_proto)
-    p.pack_protos (pp_items pp_machine) p.pack_machines
+  pf ppf "@[<v>%a@;%a@]" (pp_items pp_proto) p.protos (pp_items pp_machine)
+    p.machines

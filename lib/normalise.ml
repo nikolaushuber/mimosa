@@ -1,4 +1,4 @@
-(* * Translate typed AST to k-normal form
+(* Translate typed AST to k-normal form *)
 
 open Ttree
 open Norm_builder
@@ -17,7 +17,7 @@ let rec dummy_nil =
   | TInt -> eint 0
   | TUnit -> eunit ()
   | TBool -> ebool false
-  | TReal -> ereal 0.0
+  | TFloat -> efloat 0.0
   | TOption t -> enone t
   | TTuple tys -> etuple (List.map dummy_nil tys)
   | TFunc _ | TVar _ -> assert false
@@ -29,8 +29,7 @@ let trans_name map s =
 
 let rec trans_expr map e : Norm.block =
   match e.expr_desc with
-  | EVar (Lident v) -> ([], base_var (trans_name map v) e.expr_ty)
-  | EVar v -> ([], base_global_var v e.expr_ty)
+  | EVar v -> ([], base_var (trans_name map v) e.expr_ty)
   | EConst c -> ([], base_const c e.expr_ty)
   | EUnOp (op, e1) ->
       let eqs', e1' = trans_expr map e1 in
@@ -131,7 +130,6 @@ let rec trans_expr map e : Norm.block =
           ]
       in
       (eqs', base_var ret ty)
-  | EMatch _ -> failwith "not yet implemented"
   | ETuple es ->
       let eqs', es' =
         List.fold_left_map
@@ -200,8 +198,4 @@ let trans_proto { proto_name; proto_input; proto_output } =
   proto proto_name proto_input proto_output.pat_ty
 
 let f pack =
-  package pack.pack_name pack.pack_dependencies
-    (List.map trans_proto pack.pack_protos)
-    (List.map trans_step pack.pack_steps) *)
-
-let f _ = failwith "normalisation not yet implemented"
+  package (List.map trans_proto pack.protos) (List.map trans_step pack.steps)

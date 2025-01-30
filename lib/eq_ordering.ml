@@ -36,30 +36,31 @@ let rec check_any_in_output pat =
       let err = Error.Output_any in
       error (err, loc)
 
-(* Returns the set of symbols used by an expression *)
+(* Returns the set of symbols an expression depends on *)
 let vars_used_by_expr =
   let open Reserr in
-  let rec aux set expr =
+  let rec aux acc expr =
     match expr.expr_desc with
-    | Expr_ident id -> String.Set.add id set |> ok
-    | Expr_constant _ -> ok set
-    | Expr_unop (_, e) | Expr_pre e -> aux set e
+    | Expr_ident id -> String.Set.add id acc |> ok
+    | Expr_constant _ -> ok acc
+    | Expr_unop (_, e) -> aux acc e
+    | Expr_pre _ -> String.Set.empty |> ok
     | Expr_binop (_, e1, e2)
     | Expr_fby (e1, e2)
     | Expr_arrow (e1, e2)
     | Expr_either (e1, e2) ->
-        fold_left aux set [ e1; e2 ]
-    | Expr_apply (_, e) -> aux set e
-    | Expr_tuple es -> fold_left aux set es
-    | Expr_ite (e1, e2, e3) -> fold_left aux set [ e1; e2; e3 ]
-    | Expr_none -> ok set
-    | Expr_some e -> aux set e
+        fold_left aux acc [ e1; e2 ]
+    | Expr_apply (_, e) -> aux acc e
+    | Expr_tuple es -> fold_left aux acc es
+    | Expr_ite (e1, e2, e3) -> fold_left aux acc [ e1; e2; e3 ]
+    | Expr_none -> ok acc
+    | Expr_some e -> aux acc e
   in
   aux String.Set.empty
 
 let order_step step =
   let open Reserr in
-  let* in_set, init_map = vars_of_pat step.step_input in
+  let* _, init_map = vars_of_pat step.step_input in
   let* out_set, out_map = vars_of_pat ~init_map step.step_output in
 
   (* For each equation, find out which symbols are defined and used *)
@@ -87,44 +88,34 @@ let order_step step =
     let err = Error.Output_not_defined elem in
     error (err, loc)
   else
-    (* all symbols used by the given equations *)
-    let all_uses = List.fold_left String.Set.union String.Set.empty uses in
+    (* TODO: Are all inputs used? *)
+    (* create map from each defined symbol to equation where it was defined *)
+    let def_map, rev_map =
+      let map_eq_number i defs =
+        String.Set.fold
+          (fun id (map, rev_map) -> ((id, i) :: map, (i, id) :: rev_map))
+          defs ([], [])
+      in
+      let def_list, rev_list = List.mapi map_eq_number defs |> List.split in
+      (List.flatten def_list, List.flatten rev_list)
+    in
 
-    (* Are all inputs used? *)
-    let unused_inputs = String.Set.diff in_set all_uses in
-    if not (String.Set.is_empty unused_inputs) then
-      let elem = String.Set.choose unused_inputs in
-      let loc = String.Map.find elem init_map in
-      let err = Error.Input_unused elem in
-      error (err, loc)
-    else
-      (* create map from each defined symbol to equation where it was defined *)
-      let def_map, rev_map =
-        let map_eq_number i defs =
-          String.Set.fold
-            (fun id (map, rev_map) -> ((id, i) :: map, (i, id) :: rev_map))
-            defs ([], [])
-        in
-        let def_list, rev_list = List.mapi map_eq_number defs |> List.split in
-        (List.flatten def_list, List.flatten rev_list)
+    let dependencies =
+      (* Undefined names will be detected during type-checking *)
+      let find_name name acc =
+        try List.assoc name def_map :: acc with _ -> acc
       in
 
-      let dependencies =
-        (* Undefined names will be detected during type-checking *)
-        let find_name name acc =
-          try List.assoc name def_map :: acc with _ -> acc
-        in
+      List.mapi (fun i set -> (i, String.Set.fold find_name set [])) uses
+    in
 
-        List.mapi (fun i set -> (i, String.Set.fold find_name set [])) uses
-      in
+    let* sorted =
+      match Tsort.sort dependencies with
+      | Tsort.Sorted list -> ok list
+      | ErrorCycle list ->
+          let names = List.map (Fun.flip List.assoc rev_map) list in
+          let err = Error.Cycle_in_equations names in
+          error (err, step.step_loc)
+    in
 
-      let* sorted =
-        match Tsort.sort dependencies with
-        | Tsort.Sorted list -> ok list
-        | ErrorCycle list ->
-            let names = List.map (Fun.flip List.assoc rev_map) list in
-            let err = Error.Cycle_in_equations names in
-            error (err, step.step_loc)
-      in
-
-      { step with step_def = List.map (List.nth step.step_def) sorted } |> ok
+    { step with step_def = List.map (List.nth step.step_def) sorted } |> ok

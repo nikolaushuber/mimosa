@@ -37,7 +37,7 @@ end = struct
     | TFunc (t1, t2) -> Int.Set.union (ftv t1) (ftv t2)
     | TVar i -> Int.Set.singleton i
 
-  let rec apply s = function
+  let rec apply (s : Subst.t) = function
     | TVar n -> (
         match Int.Map.find_opt n s with
         | Some t -> t

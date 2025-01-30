@@ -55,5 +55,4 @@ let pp_proto ppf (name, input, _) =
   pf ppf "@[<2>extern step@ %s@ (%a)@]@\n" name pp_pattern input
 
 let pp ppf p =
-  pf ppf "@[<v>@[package@;<1 2>%s@]@;@;%a@;%a@]@." p.pack_name (list pp_proto)
-    p.pack_protos (list pp_step) p.pack_steps
+  pf ppf "@[<v>%a@;%a@]@." (list pp_proto) p.protos (list pp_step) p.steps

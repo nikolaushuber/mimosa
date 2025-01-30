@@ -1,4 +1,0 @@
-step test a --> b
-{
-    b = CyclicA.test a;
-}

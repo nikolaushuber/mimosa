@@ -32,10 +32,4 @@ and block = (pat * expr) list * base_expr
 
 type step = string * pat * Type.t * block * int
 type proto = string * pat * Type.t
-
-type t = {
-  pack_name : string;
-  pack_dependencies : string list;
-  pack_steps : step list;
-  pack_protos : proto list;
-}
+type t = { steps : step list; protos : proto list }

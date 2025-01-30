@@ -28,5 +28,4 @@ let machine name input locals memory instances reset ret self def =
 let proto proto_name proto_input proto_output =
   { proto_name; proto_input; proto_output }
 
-let package pack_name pack_dependencies pack_protos pack_machines =
-  { pack_name; pack_dependencies; pack_protos; pack_machines }
+let package protos machines = { protos; machines }

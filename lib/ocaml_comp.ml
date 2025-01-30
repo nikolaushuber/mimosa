@@ -196,10 +196,10 @@ let gen_intf_ty p =
   let proto_infs =
     List.map
       (fun p -> class_ty p.proto_name p.proto_input p.proto_output)
-      p.pack_protos
+      p.protos
   in
   let step_intfs =
-    List.map (fun s -> class_ty s.name s.input.pat_ty s.ret) p.pack_machines
+    List.map (fun s -> class_ty s.name s.input.pat_ty s.ret) p.machines
   in
   let mod_typ =
     module_type_declaration ~name:(noloc "Intf")
@@ -270,40 +270,28 @@ let gen_machine_obj m =
 
 let gen_make p =
   let inner_mod_expr =
-    let proto_objs = List.map gen_proto_obj p.pack_protos in
-    let machine_objs = List.map gen_machine_obj p.pack_machines in
+    let proto_objs = List.map gen_proto_obj p.protos in
+    let machine_objs = List.map gen_machine_obj p.machines in
     pmod_structure (proto_objs @ machine_objs)
   in
   let mod_expr =
     let funct_param =
-      if p.pack_protos = [] then Unit
+      if p.protos = [] then Unit
       else Named (noloc (Option.some "E"), pmty_ident (noloc (lident "Extern")))
     in
     pmod_functor funct_param inner_mod_expr
   in
-  let mod_expr_with_deps =
-    List.fold_left
-      (fun expr dep ->
-        let funct_param =
-          Named
-            ( noloc (Option.some dep),
-              pmty_ident (noloc (Ldot (lident dep, "Intf"))) )
-        in
-        pmod_functor funct_param expr)
-      mod_expr p.pack_dependencies
-  in
   let mod_bind =
-    module_binding ~name:(noloc (Option.some "Make")) ~expr:mod_expr_with_deps
+    module_binding ~name:(noloc (Option.some "Make")) ~expr:mod_expr
   in
   pstr_module mod_bind
 
 let trans_package p =
-  let name = p.pack_name in
-  let proto_intf = gen_proto_ty p.pack_protos in
+  (* let proto_intf = gen_proto_ty p.protos in *)
   let pack_intf = gen_intf_ty p in
   let make_functor = gen_make p in
-  let mod_expr = pmod_structure (proto_intf @ [ pack_intf; make_functor ]) in
+  let mod_expr = pmod_structure [ pack_intf; make_functor ] in
   let mod_bind =
-    module_binding ~name:(noloc (Option.some name)) ~expr:mod_expr
+    module_binding ~name:(noloc (Option.some "Module")) ~expr:mod_expr
   in
   [ pstr_module mod_bind ]

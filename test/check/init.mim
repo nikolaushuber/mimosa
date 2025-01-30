@@ -1,0 +1,5 @@
+step delay (init, signal) --> out
+{
+    x = 0 -> pre x;
+    out = init -> pre signal;
+}
