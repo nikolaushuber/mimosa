@@ -61,4 +61,9 @@ let proto proto_name proto_input proto_output =
 let channel channel_name channel_ty channel_elems =
   { channel_name; channel_ty; channel_elems }
 
+let port port_name port_async = { port_name; port_async }
+
+let node node_name node_implements node_inputs node_outputs node_period =
+  { node_name; node_implements; node_inputs; node_outputs; node_period }
+
 let package protos steps channels nodes = { protos; steps; channels; nodes }

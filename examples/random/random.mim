@@ -1,0 +1,22 @@
+step random_int () --> (_ : int)
+step print_int (_ : int) --> ()
+
+step times2 a --> b
+{
+    b = 2 * a;
+}
+
+channel a : int
+channel b : int
+
+node rand implements
+    random_int () --> (a)
+    every 1000ms
+
+node dup implements
+    times2 (a) --> (b)
+    every 1000ms
+
+node print implements
+    print_int (b) --> ()
+    every 1000ms

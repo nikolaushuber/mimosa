@@ -4,7 +4,7 @@ type pat = { pat_desc : pat_desc; pat_ty : Type.t }
 and pat_desc = PAny | PUnit | PVar of string | PTuple of pat list
 
 type const = CUnit | CInt of int | CFloat of float | CBool of bool
-type unop = Not | Neg | RNeg | IsSome
+type unop = Not | Neg | FNeg | IsSome
 
 type binop =
   | And
@@ -65,11 +65,11 @@ type node = {
   node_name : string;
   node_implements : string;
   node_inputs : port list;
-  node_outputs : node list;
+  node_outputs : port list;
   node_period : period;
 }
 
-and port = { port_name : string; port_aync : bool }
+and port = { port_name : string; port_async : bool }
 and period = int * Ptree.time_unit
 
 type t = {

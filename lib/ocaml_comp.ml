@@ -62,7 +62,7 @@ let trans_unop op s =
   match op with
   | Not -> [%expr Bool.not [%e evar s]]
   | Neg -> [%expr Int.neg [%e evar s]]
-  | RNeg -> [%expr Float.neg [%e evar s]]
+  | FNeg -> [%expr Float.neg [%e evar s]]
   | IsSome -> [%expr Option.is_some [%e evar s]]
 
 let trans_binop op s1 s2 =

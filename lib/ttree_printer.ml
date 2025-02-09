@@ -25,7 +25,7 @@ let pp_const ppf = function
 let pp_unop ppf = function
   | Not -> string ppf "~"
   | Neg -> string ppf "-"
-  | RNeg -> string ppf "-."
+  | FNeg -> string ppf "-."
   | IsSome -> string ppf "?"
 
 let pp_binop ppf = function
@@ -82,9 +82,30 @@ let pp_proto ppf p =
   pf ppf "step %s %a --> %a" p.proto_name (parens pp_pat) p.proto_input
     (parens pp_pat) p.proto_output
 
-let pp ppf { protos; steps; _ } =
-  pf ppf "@[<v>%a@;%a@]@."
-    (list ~sep:(cut ++ cut) pp_proto)
-    protos
-    (list ~sep:(cut ++ cut) pp_step)
-    steps
+let pp_channel ppf c =
+  pf ppf "channel %s : %a = %a" c.channel_name Type.pp c.channel_ty
+    (braces (list ~sep:semi pp_expr))
+    c.channel_elems
+
+let pp_port ppf { port_name; port_async } =
+  if port_async then pf ppf "@[async@;%s@]" port_name else string ppf port_name
+
+let pp_period ppf (time, unit) =
+  let pp_unit ppf =
+    let open Ptree in
+    function
+    | Ms -> string ppf "ms"
+  in
+  pf ppf "@[%d@;%a@]" time pp_unit unit
+
+let pp_node ppf n =
+  pf ppf "@[<hv0>@[<hov>node@ %s@]@;implements@;%s@;%a@ -->@ %a@;every@;%a@]"
+    n.node_name n.node_implements
+    (parens (list ~sep:comma pp_port))
+    n.node_inputs
+    (parens (list ~sep:comma pp_port))
+    n.node_outputs pp_period n.node_period
+
+let pp ppf { protos; steps; channels; nodes } =
+  pf ppf "@[<v>%a@;%a@;%a@;%a@]@." (list pp_proto) protos (list pp_step) steps
+    (list pp_channel) channels (list pp_node) nodes

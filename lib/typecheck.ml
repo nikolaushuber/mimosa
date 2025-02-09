@@ -67,12 +67,11 @@ and ty_unop env op e =
       (Subst.compose s2 s1, TInt, eunop Ttree.Neg e' TInt) |> ok
   | Unop_fneg ->
       let* s2 = unify ~loc:e.expr_loc TInt ty in
-      (Subst.compose s2 s1, TFloat, eunop Ttree.RNeg e' TFloat) |> ok
+      (Subst.compose s2 s1, TFloat, eunop Ttree.FNeg e' TFloat) |> ok
   | Unop_is_some ->
       let n = next_state () in
       let* s2 = unify ~loc:e.expr_loc (TOption (TVar n)) ty in
-      (Subst.compose s2 s1, TOption ty, eunop Ttree.IsSome e' (TOption ty))
-      |> ok
+      (Subst.compose s2 s1, TBool, eunop Ttree.IsSome e' TBool) |> ok
 
 and ty_binop env op e1 e2 =
   let trans_op op =
@@ -386,7 +385,7 @@ let ty_proto env p =
 
   (env', Ttree_builder.proto name p_in p_out) |> ok
 
-let ty_link env l =
+let ty_channel env l =
   let rec ty_core_type c =
     match c.type_desc with
     | Type_var _ ->
@@ -406,12 +405,37 @@ let ty_link env l =
   let name = l.channel_name in
   let* ty' = ty_core_type l.channel_type in
   let env' = String.Map.add name ty' env in
-  (env', channel name ty') |> ok
+  let* elems =
+    map
+      (fun e ->
+        let* _, _, e' = ty_expr Env.empty e in
+        e' |> ok)
+      l.channel_elems
+  in
+  (env', channel name ty' elems) |> ok
+
+let ty_port env p =
+  let port_name = p.port_name.txt in
+  let port_async = p.port_async in
+  (env, port port_name port_async) |> ok
+
+let ty_node env n =
+  let node_name = n.node_name.txt in
+  let node_implements = n.node_implements.txt in
+  let* _, node_inputs = fold_left_map ty_port String.Map.empty n.node_inputs in
+  let* _, node_outputs =
+    fold_left_map ty_port String.Map.empty n.node_outputs
+  in
+  let node_period = (n.node_period.period_time, n.node_period.period_unit) in
+  (env, node node_name node_implements node_inputs node_outputs node_period)
+  |> ok
 
 let ty_pack pack =
   let* env, protos = fold_left_map ty_proto Env.empty pack.protos in
   let* _, steps = fold_left_map ty_step env pack.steps in
-  let pack = package protos steps [] [] in
+  let* _, channels = fold_left_map ty_channel String.Map.empty pack.channels in
+  let* _, nodes = fold_left_map ty_node String.Map.empty pack.nodes in
+  let pack = package protos steps channels nodes in
   pack |> ok
 
 let f (d : Ordering.t) : Ttree.t Reserr.t = ty_pack d

@@ -1,0 +1,13 @@
+(rule
+ (target random.ml)
+ (deps
+  (package mimosa))
+ (action
+  (run mimosa dump sim %{dep:random.mim} -o %{target})))
+
+(library
+ (name random_test)
+ (inline_tests)
+ (preprocess
+  (pps ppx_inline_test))
+ (libraries mimosa))

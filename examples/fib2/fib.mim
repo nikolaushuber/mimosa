@@ -1,0 +1,26 @@
+step print_int (_ : int) --> ()
+
+step print_opt_int a --> ()
+{
+    _ = if ?a then print_int (either a or 0) else ();
+}
+
+step add (a) --> c
+{
+    b = 0 -> pre (1 -> pre c);
+    c = a + b;
+}
+
+step split inp --> (o1, o2)
+{
+    o1 = inp;
+    o2 = inp;
+}
+
+channel a : int = { 0 }
+channel b : int
+channel c : int
+
+node add implements add (a) --> (b) every 10ms
+node split implements split (b) --> (a, c) every 10ms
+node print implements print_opt_int (async c) --> () every 1ms

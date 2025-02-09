@@ -1,0 +1,22 @@
+step print_int (_ : int) --> ()
+
+step add (a, b) --> c
+{
+    c = a + b;
+}
+
+step split inp --> (o1, o2, o3)
+{
+    o1 = inp;
+    o2 = inp;
+    o3 = inp;
+}
+
+channel a : int = { 1 }
+channel b : int = { 0 }
+channel c : int
+channel d : int
+
+node add implements add (a, c) --> (b) every 10ms
+node split implements split (b) --> (c, a, d) every 10ms
+node print implements print_int (d) --> () every 10ms
