@@ -23,4 +23,4 @@ channel c : int
 
 node add implements add (a) --> (b) every 10ms
 node split implements split (b) --> (a, c) every 10ms
-node print implements print_opt_int (async c) --> () every 1ms
+node print implements print_opt_int (c?) --> () every 1ms

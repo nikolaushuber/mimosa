@@ -6,8 +6,16 @@
   (run mimosa dump sim %{dep:fib.mim} -o %{target})))
 
 (library
- (name fib_test)
- (inline_tests)
- (preprocess
-  (pps ppx_inline_test))
+ (name fib)
+ (modules fib)
  (libraries mimosa))
+
+(executable
+ (name fib_test)
+ (modules fib_test)
+ (libraries mimosa fib))
+
+(rule
+ (alias runtest)
+ (action
+  (run %{dep:fib_test.exe})))

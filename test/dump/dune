@@ -57,20 +57,6 @@
   (progn
    (diff type_infer_output.expected type_infer_output))))
 
-(rule
- (deps
-  (package mimosa))
- (action
-  (with-stdout-to
-   mono_output
-   (run mimosa dump mono %{dep:mono.mim}))))
-
-(rule
- (alias runtest)
- (action
-  (progn
-   (diff mono_output.expected mono_output))))
-
 ; (rule
 ;  (deps
 ;   (package mimosa))

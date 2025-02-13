@@ -37,7 +37,7 @@ let trans_const = function
   | CUnit -> [%expr EUnit]
   | CInt i -> [%expr EInt [%e eint i]]
   | CBool b -> [%expr EBool [%e ebool b]]
-  | CFloat f -> [%expr EFloat [%e efloat (f |> string_of_float)]]
+  | CFloat f -> [%expr EFloat [%e efloat f]]
 
 let trans_unop = function
   | Not -> [%expr Not]
@@ -176,10 +176,8 @@ let create_ret ty =
         ( n',
           ( pvar var,
             [%expr
-              Option.bind
-                (function
-                  | [%p p] -> [%e e]
-                  | _ -> assert false)
+              Option.fold ~none:(VOption None)
+                ~some:(fun [%p p] -> VOption (Some [%e e]))
                 [%e evar var]] ) )
     | _ -> assert false
   in
@@ -210,11 +208,11 @@ let val_of_const_expr e =
   | EConst CUnit -> [%expr VUnit]
   | EConst (CInt i) -> [%expr VInt [%e eint i]]
   | EConst (CBool b) -> [%expr VBool [%e ebool b]]
-  | EConst (CFloat f) -> [%expr VFloat [%e efloat (string_of_float f)]]
+  | EConst (CFloat f) -> [%expr VFloat [%e efloat f]]
   | _ -> assert false
 
 let trans_node n =
-  let trans_port p = pexp_tuple [ estring p.port_name; ebool p.port_async ] in
+  let trans_port p = pexp_tuple [ estring p.port_name; ebool p.port_opt ] in
   [%stri
     let [%p pvar n.node_name] =
       {

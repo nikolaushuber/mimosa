@@ -38,22 +38,21 @@ let rec check_any_in_output pat =
 
 (* Returns the set of symbols an expression depends on *)
 let vars_used_by_expr =
-  let open Reserr in
   let rec aux acc expr =
     match expr.expr_desc with
-    | Expr_ident id -> String.Set.add id acc |> ok
-    | Expr_constant _ -> ok acc
+    | Expr_ident id -> String.Set.add id acc
+    | Expr_constant _ -> acc
     | Expr_unop (_, e) -> aux acc e
-    | Expr_pre _ -> String.Set.empty |> ok
+    | Expr_pre _ -> acc
     | Expr_binop (_, e1, e2)
     | Expr_fby (e1, e2)
     | Expr_arrow (e1, e2)
     | Expr_either (e1, e2) ->
-        fold_left aux acc [ e1; e2 ]
+        List.fold_left aux acc [ e1; e2 ]
     | Expr_apply (_, e) -> aux acc e
-    | Expr_tuple es -> fold_left aux acc es
-    | Expr_ite (e1, e2, e3) -> fold_left aux acc [ e1; e2; e3 ]
-    | Expr_none -> ok acc
+    | Expr_tuple es -> List.fold_left aux acc es
+    | Expr_ite (e1, e2, e3) -> List.fold_left aux acc [ e1; e2; e3 ]
+    | Expr_none -> acc
     | Expr_some e -> aux acc e
   in
   aux String.Set.empty
@@ -67,7 +66,7 @@ let order_step step =
   let* defs, uses =
     let aux (init_map, list) (pat, e) =
       let* defs, map' = vars_of_pat ~init_map pat in
-      let* uses = vars_used_by_expr e in
+      let uses = vars_used_by_expr e in
       (map', (defs, uses) :: list) |> ok
     in
     let* _, defs_uses = fold_left aux (init_map, []) step.step_def in

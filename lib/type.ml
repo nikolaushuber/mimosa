@@ -87,6 +87,7 @@ end = struct
     | TInt, TInt -> Int.Map.empty |> ok
     | TBool, TBool -> Int.Map.empty |> ok
     | TUnit, TUnit -> Int.Map.empty |> ok
+    | TFloat, TFloat -> Int.Map.empty |> ok
     | TOption t1, TOption t2 -> unify ~loc t1 t2
     | TTuple ts1, TTuple ts2 ->
         fold_left
@@ -105,7 +106,7 @@ end = struct
     function
     | TUnit -> string ppf "unit"
     | TBool -> string ppf "bool"
-    | TFloat -> string ppf "real"
+    | TFloat -> string ppf "float"
     | TInt -> string ppf "int"
     | TTuple ts -> pf ppf "(%a)" (list ~sep:(fun ppf _ -> pf ppf " * ") pp) ts
     | TOption t -> pf ppf "%a?" pp t

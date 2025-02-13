@@ -1,0 +1,16 @@
+(rule
+ (target pid.ml)
+ (deps
+  (package mimosa))
+ (action
+  (run mimosa dump sim %{dep:pid.mim} -o %{target})))
+
+(library
+ (name pid)
+ (modules pid)
+ (libraries mimosa))
+
+(executable
+ (name pid_example)
+ (modules pid_example)
+ (libraries mimosa pid minttea spices leaves fmt))

@@ -26,7 +26,7 @@ and pattern_desc =
 
 type constant =
   | Const_int of int
-  | Const_float of float
+  | Const_float of string
   | Const_bool of bool
   | Const_unit
 
@@ -90,7 +90,7 @@ type proto = {
   proto_loc : Location.t;
 }
 
-type port = { port_name : string loc; port_async : bool; port_loc : Location.t }
+type port = { port_name : string loc; port_opt : bool; port_loc : Location.t }
 type time_unit = Ms
 
 type period = {

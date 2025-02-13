@@ -15,8 +15,7 @@ end
 module Simulation = Simulation (E)
 open Mimosa.Sim
 
-let%test _ =
+let _ =
   let sim = Simulation.init () in
   let _' = exec sim 10000 in
-  List.mapi (fun i o -> 2 * i = o) (List.rev !output)
-  |> List.fold_left ( && ) true
+  List.iteri (fun i o -> assert (2 * i = o)) (List.rev !output)

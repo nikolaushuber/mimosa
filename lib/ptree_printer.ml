@@ -26,7 +26,7 @@ and sexp_of_pattern_desc = function
 let sexp_of_constant = function
   | Const_int i -> Atom (string_of_int i)
   | Const_bool b -> Atom (string_of_bool b)
-  | Const_float f -> Atom (string_of_float f)
+  | Const_float f -> Atom f
   | Const_unit -> Atom "()"
 
 let rec sexp_of_unop unop = sexp_of_unop_desc unop.unop_desc
@@ -127,8 +127,8 @@ let sexp_of_proto p =
   let output' = sexp_of_pattern p.proto_output in
   List [ Atom "step"; name; input'; output' ]
 
-let sexp_of_node _ = assert false
-let sexp_of_channel _ = assert false
+let sexp_of_node _ = List []
+let sexp_of_channel _ = List []
 
 let rec sexp_of_item item = sexp_of_item_desc item.item_desc
 

@@ -48,7 +48,6 @@
 %token TK_IMPLEMENTS "implements"
 %token TK_EVERY "every"
 %token TK_MS "ms"
-%token TK_ASYNC "async"
 %token TK_NONE "None"
 %token TK_SOME "Some"
 %token TK_EITHER "either"
@@ -62,7 +61,7 @@
 
 (* Constants *)
 %token <int> TK_INT
-%token <float> TK_FLOAT
+%token <string> TK_FLOAT
 %token <string> TK_STRING
 %token <bool> TK_BOOL
 
@@ -158,8 +157,8 @@ time_unit:
     | "ms" { ms }
 
 node_port:
-    | async = "async"? name = with_loc(TK_STRING) {
-         port ~loc:(to_loc $loc) name (Option.is_some async)
+    | name = with_loc(TK_STRING) opt = "?"? {
+         port ~loc:(to_loc $loc) name (Option.is_some opt)
     }
 
 simple_ty:

@@ -61,7 +61,6 @@ rule tokenize = parse
     | "implements" { TK_IMPLEMENTS }
     | "every" { TK_EVERY }
     | "ms" { TK_MS }
-    | "async" { TK_ASYNC }
     | "either" { TK_EITHER }
     | "or" { TK_EITHER_OR }
 
@@ -77,6 +76,7 @@ rule tokenize = parse
     | "Some" { TK_SOME }
     | "_" { TK_ANY }
     | integer as i { TK_INT (int_of_string i) }
+    | float as f { TK_FLOAT f }
     | lower_ident as id { TK_STRING id }
 
     (* Others *)

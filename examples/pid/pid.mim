@@ -1,0 +1,27 @@
+step recv_cmd () --> (_ : float?)
+step set_level (_ : float) --> ()
+step get_level () --> (_ : float)
+
+step controller (cmd, level) --> power
+{
+    last_goal = 0.0 -> pre goal;
+    goal = either cmd or last_goal;
+    power = pid (goal, level);
+}
+
+step pid (goal, curr) --> out
+{
+    err = goal -. curr;
+    d = (err -. (0.0 -> pre err)) /. 0.1;
+    i = (0.0 -> pre i) +. err *. 0.1;
+    out = (0.1 *. err) +. (0.01 *. i) +. (0.05 *. d);
+}
+
+channel cmd : float
+channel power : float
+channel level : float = { 0.0 }
+
+node cmd implements recv_cmd () --> (cmd?) every 500ms
+node sensor implements get_level () --> (level) every 100ms
+node control implements controller (cmd?, level) --> (power) every 100ms
+node actuator implements set_level (power) --> () every 100ms

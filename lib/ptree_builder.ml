@@ -39,8 +39,8 @@ let esome ?(loc = noloc) e = mk_expr (Expr_some e) loc
 let unop ?(loc = noloc) unop_desc = { unop_desc; unop_loc = loc }
 let binop ?(loc = noloc) binop_desc = { binop_desc; binop_loc = loc }
 
-let port ?(loc = noloc) port_name port_async =
-  { port_name; port_async; port_loc = loc }
+let port ?(loc = noloc) port_name port_opt =
+  { port_name; port_opt; port_loc = loc }
 
 let ms = Ms
 

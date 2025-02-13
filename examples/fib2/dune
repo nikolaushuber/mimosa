@@ -1,13 +1,21 @@
 (rule
- (target fib.ml)
+ (target fib2.ml)
  (deps
   (package mimosa))
  (action
-  (run mimosa dump sim %{dep:fib.mim} -o %{target})))
+  (run mimosa dump sim %{dep:fib2.mim} -o %{target})))
 
 (library
- (name fib2_test)
- (inline_tests)
- (preprocess
-  (pps ppx_inline_test))
+ (name fib2)
+ (modules fib2)
  (libraries mimosa))
+
+(executable
+ (name fib2_test)
+ (modules fib2_test)
+ (libraries mimosa fib2))
+
+(rule
+ (alias runtest)
+ (action
+  (run %{dep:fib2_test.exe})))

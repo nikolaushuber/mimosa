@@ -416,8 +416,8 @@ let ty_channel env l =
 
 let ty_port env p =
   let port_name = p.port_name.txt in
-  let port_async = p.port_async in
-  (env, port port_name port_async) |> ok
+  let port_opt = p.port_opt in
+  (env, port port_name port_opt) |> ok
 
 let ty_node env n =
   let node_name = n.node_name.txt in

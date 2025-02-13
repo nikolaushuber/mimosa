@@ -1,0 +1,21 @@
+(rule
+ (target controller.ml)
+ (deps
+  (package mimosa))
+ (action
+  (run mimosa dump sim %{dep:controller.mim} -o %{target})))
+
+(library
+ (name controller)
+ (modules controller)
+ (libraries mimosa))
+
+(executable
+ (name led_test)
+ (modules led_test)
+ (libraries mimosa controller))
+
+(rule
+ (alias runtest)
+ (action
+  (run %{dep:led_test.exe})))

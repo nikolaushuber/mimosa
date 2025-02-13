@@ -34,7 +34,9 @@ let rec eval env = function
   | EInt i -> (VInt i, fun _ -> EInt i)
   | EBool b -> (VBool b, fun _ -> EBool b)
   | EFloat f -> (VFloat f, fun _ -> EFloat f)
-  | EVar v -> (List.assoc v env, fun _ -> EVar v)
+  | EVar v -> (
+      try (List.assoc v env, fun _ -> EVar v)
+      with Not_found -> failwith ("Unknown variable " ^ v))
   | EUnOp (op, e) ->
       let v, cont = eval env e in
       (eval_unop op v, fun env' -> EUnOp (op, cont env'))

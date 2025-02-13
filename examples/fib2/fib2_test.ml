@@ -1,4 +1,4 @@
-open Fib
+open Fib2
 open Mimosa.Sim
 
 let output = ref []
@@ -20,8 +20,7 @@ let fib n =
     done;
     !fib_curr
 
-let%test _ =
+let _ =
   let sim = Simulation.init () in
   exec sim 1000;
-  List.mapi (fun i res -> res = fib i) (List.rev !output)
-  |> List.fold_left ( && ) true
+  List.iteri (fun i res -> assert (res = fib i)) (List.rev !output)

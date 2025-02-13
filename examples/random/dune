@@ -6,8 +6,16 @@
   (run mimosa dump sim %{dep:random.mim} -o %{target})))
 
 (library
- (name random_test)
- (inline_tests)
- (preprocess
-  (pps ppx_inline_test))
+ (name random)
+ (modules random)
  (libraries mimosa))
+
+(executable
+ (name random_test)
+ (modules random_test)
+ (libraries mimosa random))
+
+(rule
+ (alias runtest)
+ (action
+  (run %{dep:random_test.exe})))

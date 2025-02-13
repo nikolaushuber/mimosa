@@ -19,7 +19,7 @@ let rec pp_pat : pat Fmt.t =
 let pp_const ppf = function
   | CUnit -> string ppf "()"
   | CInt i -> int ppf i
-  | CFloat f -> float ppf f
+  | CFloat f -> string ppf f
   | CBool b -> bool ppf b
 
 let pp_unop ppf = function
@@ -87,8 +87,8 @@ let pp_channel ppf c =
     (braces (list ~sep:semi pp_expr))
     c.channel_elems
 
-let pp_port ppf { port_name; port_async } =
-  if port_async then pf ppf "@[async@;%s@]" port_name else string ppf port_name
+let pp_port ppf { port_name; port_opt } =
+  if port_opt then pf ppf "@[%s?@]" port_name else string ppf port_name
 
 let pp_period ppf (time, unit) =
   let pp_unit ppf =

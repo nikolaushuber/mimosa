@@ -34,56 +34,6 @@ let ttree =
       (info "ttree" ~doc:"Dump AST after type checking.")
       Term.(const main_dump_ttree $ Args.file))
 
-let main_mono file =
-  let open Reserr in
-  let open Fmt in
-  Ttree_printer.pp stdout
-    (Parse.f file
-    >>= Ordering.f
-    >>= Typecheck.f
-    |> Reserr.unpack
-    |> Monomorphise.f)
-
-let mono =
-  Cmd.(
-    v
-      (info "mono" ~doc:"Dump AST after monomorphisation.")
-      Term.(const main_mono $ Args.file))
-
-let main_norm file =
-  let open Reserr in
-  let open Fmt in
-  Norm_printer.pp stdout
-    (Parse.f file
-    >>= Ordering.f
-    >>= Typecheck.f
-    |> Reserr.unpack
-    |> Monomorphise.f
-    |> Normalise.f)
-
-let norm =
-  Cmd.(
-    v
-      (info "norm" ~doc:"Dump AST after normalisation.")
-      Term.(const main_norm $ Args.file))
-
-let main_ocaml file =
-  let open Reserr in
-  let open Fmt in
-  pf stdout "@[<v>%a@]@." Ppxlib_ast.Pprintast.structure
-    (Parse.f file
-    >>= Ordering.f
-    >>= Typecheck.f
-    |> Reserr.unpack
-    |> Monomorphise.f
-    |> Normalise.f
-    |> Objectify.f
-    |> Ocaml_comp.trans_package)
-
-let ocaml =
-  Cmd.(
-    v (info "ocaml" ~doc:"Dump OCaml code.") Term.(const main_ocaml $ Args.file))
-
 let fmt_of_path p =
   match p with
   | None -> Fmt.stdout
@@ -109,5 +59,5 @@ let sim =
 let cmd =
   let doc = "Dump tool for debugging information." in
   let info = Cmd.info "dump" ~doc in
-  let cmds = [ ptree; eqorder; ttree; mono; norm; ocaml; sim ] in
+  let cmds = [ ptree; eqorder; ttree; sim ] in
   Cmd.group info cmds

@@ -1,0 +1,21 @@
+step pin_level () --> (_ : bool)
+step set_led (_ : bool) --> ()
+
+step controller in --> ()
+{
+    pre_in = false -> pre in;
+    _ = if ~pre_in && in then set_led true
+        else if pre_in && ~in then set_led false
+        else ();
+}
+
+channel level : bool = { false }
+
+node input implements pin_level () --> (level) every 100ms
+node led_controller implements controller (level) --> () every 100ms
+
+step edge_detect in --> out
+{
+    pre_in = false -> pre in;
+    out = if ~pre_in && in then Some () else None;
+}

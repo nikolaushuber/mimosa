@@ -3,7 +3,7 @@ open Type
 type pat = { pat_desc : pat_desc; pat_ty : Type.t }
 and pat_desc = PAny | PUnit | PVar of string | PTuple of pat list
 
-type const = CUnit | CInt of int | CFloat of float | CBool of bool
+type const = CUnit | CInt of int | CFloat of string | CBool of bool
 type unop = Not | Neg | FNeg | IsSome
 
 type binop =
@@ -69,7 +69,7 @@ type node = {
   node_period : period;
 }
 
-and port = { port_name : string; port_async : bool }
+and port = { port_name : string; port_opt : bool }
 and period = int * Ptree.time_unit
 
 type t = {
