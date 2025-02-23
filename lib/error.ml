@@ -14,6 +14,7 @@ type t =
   | Missing_type_in_proto
   | Typevar_in_proto
   | Typevar_in_link
+  | Uninitialized_sequence of string option
 
 open Fmt
 
@@ -62,3 +63,5 @@ let pp ppf = function
   | Typevar_in_link ->
       pf ppf "%a@\n%a" text "Type variable in link definition" text
         "Links must use monomorphic types"
+  | Uninitialized_sequence msg ->
+      pf ppf "%a@\n%a" text "Uninitialized sequence" (option text) msg

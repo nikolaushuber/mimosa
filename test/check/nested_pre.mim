@@ -1,0 +1,5 @@
+step test1 a --> b
+{
+    b = 0 -> 0 -> pre pre a;
+}
+

@@ -1,0 +1,12 @@
+step edge (in : bool) --> (out : bool?)
+{
+    pre_in = false -> pre in;
+    out = if !pre_in && in then Some true
+          else if pre_in && !in then Some false
+          else None;
+}
+
+channel a : bool
+channel b : bool
+
+node edge_detect implements edge (a) --> (b?) every 100ms

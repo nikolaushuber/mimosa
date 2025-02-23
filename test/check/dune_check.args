@@ -9,3 +9,6 @@ type_error
 unnamed_output
 incorrect_type_1
 missing_type_in_proto
+nested_pre
+init_func_arg
+init_output

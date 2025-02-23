@@ -1,0 +1,5 @@
+File "init_output.mim", line 1, characters 17-18
+1 | step test3 a --> b
+                     ^
+Error: Uninitialized sequence
+Step-output must be initialized

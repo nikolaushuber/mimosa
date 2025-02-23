@@ -9,7 +9,7 @@
 %}
 
 (* Unary operators *)
-%token TK_NOT "~"
+%token TK_NOT "!"
 %token TK_PRE "pre"
 %token TK_QUESTIONMARK "?"
 
@@ -218,7 +218,7 @@ expr:
     | e = simple_expr { e }
 
     (* Unary operations *)
-    | "~" e = expr %prec PREC_UNARY_NOT {
+    | "!" e = expr %prec PREC_UNARY_NOT {
         let op = unop ~loc:(to_loc $loc($1)) Ptree.Unop_not in
         eunop ~loc:(to_loc $loc) op e
     }

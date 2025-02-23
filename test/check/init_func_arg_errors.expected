@@ -1,0 +1,5 @@
+File "init_func_arg.mim", line 3, characters 15-20
+3 |     b = test1 (pre a);
+                   ^^^^^
+Error: Uninitialized sequence
+Argument expression to function must always be initialized

@@ -163,3 +163,48 @@
   (progn
    (diff missing_type_in_proto_errors.expected missing_type_in_proto_errors))))
 
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stderr-to
+   nested_pre_errors
+   (run mimosa check %{dep:nested_pre.mim}))))
+
+(rule
+ (alias runtest)
+ (package mimosa)
+ (action
+  (progn
+   (diff nested_pre_errors.expected nested_pre_errors))))
+
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stderr-to
+   init_func_arg_errors
+   (run mimosa check %{dep:init_func_arg.mim}))))
+
+(rule
+ (alias runtest)
+ (package mimosa)
+ (action
+  (progn
+   (diff init_func_arg_errors.expected init_func_arg_errors))))
+
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stderr-to
+   init_output_errors
+   (run mimosa check %{dep:init_output.mim}))))
+
+(rule
+ (alias runtest)
+ (package mimosa)
+ (action
+  (progn
+   (diff init_output_errors.expected init_output_errors))))
+

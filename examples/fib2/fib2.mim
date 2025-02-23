@@ -1,6 +1,6 @@
 step print_int (_ : int) --> ()
 
-step print_opt_int a --> ()
+step print_opt_int (a : int?) --> ()
 {
     _ = if ?a then print_int (either a or 0) else ();
 }

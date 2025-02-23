@@ -15,7 +15,7 @@ step test_and (a, b) --> c
 
 step test_not a --> b
 {
-    b = ~a;
+    b = !a;
 }
 
 step fst a --> b

@@ -1,0 +1,4 @@
+step test2 a --> b
+{
+    b = test1 (pre a);
+}

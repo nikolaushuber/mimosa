@@ -22,7 +22,7 @@ rule tokenize = parse
     | "(*" { read_comment lexbuf }
 
     (* Unary operators *)
-    | "~" { TK_NOT }
+    | "!" { TK_NOT }
     | "pre" { TK_PRE }
     | "?" { TK_QUESTIONMARK }
 

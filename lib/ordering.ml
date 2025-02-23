@@ -21,7 +21,7 @@ let steps_used_in_expr acc =
         let acc' = aux acc e1 in
         aux acc' e2
     | Expr_tuple es -> List.fold_left aux acc es
-    | Expr_ite (i, t, e) -> List.fold_left aux acc [ i; t; e ]
+    | Expr_ite (c, t, e) -> List.fold_left aux acc [ c; t; e ]
     | Expr_none -> acc
     | Expr_some e -> aux acc e
   in

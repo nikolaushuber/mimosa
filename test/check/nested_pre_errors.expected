@@ -1,0 +1,5 @@
+File "nested_pre.mim", line 3, characters 22-27
+3 |     b = 0 -> 0 -> pre pre a;
+                          ^^^^^
+Error: Uninitialized sequence
+Pre can only be used on initalized expressions
