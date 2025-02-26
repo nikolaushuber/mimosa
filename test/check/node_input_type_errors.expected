@@ -1,0 +1,4 @@
+File "node_input_type.mim", line 7, characters 22-31
+7 | node print implements print_int (x) --> () every 100ms
+                          ^^^^^^^^^
+Error: This expression has type int --> unit, but an expression of type bool --> unit was expected

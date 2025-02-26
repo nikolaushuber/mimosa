@@ -17,7 +17,9 @@ let vars_of_pat ?(init_map = String.Map.empty) =
     | Pat_var name ->
         if String.Map.mem name.txt loc_map then
           let first_loc = String.Map.find name.txt loc_map in
-          let err = Error.Local_symbol_redef (name.txt, first_loc) in
+          let err =
+            Error.(Symbol_redefinition (`Local_sym, name.txt, first_loc))
+          in
           error (err, name.loc)
         else
           (String.Set.add name.txt set, String.Map.add name.txt name.loc loc_map)
@@ -113,7 +115,7 @@ let order_step step =
       | Tsort.Sorted list -> ok list
       | ErrorCycle list ->
           let names = List.map (Fun.flip List.assoc rev_map) list in
-          let err = Error.Cycle_in_equations names in
+          let err = Error.(Dependency_cycle (`Equations, names)) in
           error (err, step.step_loc)
     in
 

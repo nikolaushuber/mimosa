@@ -32,6 +32,53 @@ let steps_used_by_step step =
     (fun acc (_, rhs) -> steps_used_in_expr acc rhs)
     String.Set.empty step.step_def
 
+let check_protos step_locs protos =
+  let open Reserr in
+  let aux acc p =
+    let name = p.proto_name.txt in
+    match String.Map.find_opt name acc with
+    | Some loc ->
+        let err = Error.(Symbol_redefinition (`Step, name, loc)) in
+        error (err, p.proto_loc)
+    | None -> String.Map.add name p.proto_name.loc acc |> ok
+  in
+  fold_left aux step_locs protos
+
+let check_channels channels =
+  let open Reserr in
+  let aux acc c =
+    let name = c.channel_name.txt in
+    match String.Map.find_opt name acc with
+    | Some loc ->
+        let err = Error.(Symbol_redefinition (`Channel, name, loc)) in
+        error (err, c.channel_name.loc)
+    | None -> String.Map.add name c.channel_name.loc acc |> ok
+  in
+  let* _ = fold_left aux String.Map.empty channels in
+  ok ()
+
+let check_nodes step_locs nodes =
+  let open Reserr in
+  let aux acc n =
+    let* _ =
+      let impl_step = n.node_implements.txt in
+      match String.Map.find_opt impl_step step_locs with
+      | Some _ -> ok ()
+      | None ->
+          let loc = n.node_implements.loc in
+          let err = Error.(Unknown_symbol (`Step, impl_step)) in
+          error (err, loc)
+    in
+    let name = n.node_name.txt in
+    match String.Map.find_opt name acc with
+    | Some loc ->
+        let err = Error.(Symbol_redefinition (`Node, name, loc)) in
+        error (err, n.node_name.loc)
+    | None -> String.Map.add name n.node_name.loc acc |> ok
+  in
+  let* _ = fold_left aux String.Map.empty nodes in
+  ok ()
+
 let order items =
   let open Reserr in
   let steps, protos, channels, nodes =
@@ -52,10 +99,10 @@ let order items =
     | None ->
         (String.Map.add name step.step_name.loc step_map, dep :: deps) |> ok
     | Some loc ->
-        let err = Error.Step_redefine (name, loc) in
+        let err = Error.(Symbol_redefinition (`Step, name, loc)) in
         error (err, step.step_name.loc)
   in
-  let* _, deps = fold_left aux (String.Map.empty, []) steps in
+  let* step_locs, deps = fold_left aux (String.Map.empty, []) steps in
   let step_map =
     List.mapi
       (fun i step ->
@@ -76,11 +123,14 @@ let order items =
     | ErrorCycle list ->
         let steps = List.map (List.nth steps) list in
         let names = List.map (fun step -> step.step_name.txt) steps in
-        let err = Error.Cycle_in_steps names in
+        let err = Error.(Dependency_cycle (`Steps, names)) in
         error (err, Ptree_builder.noloc)
   in
   let sorted_steps = List.map (fun i -> List.nth steps i) sorted in
   let* ordered_steps = map Eq_ordering.order_step sorted_steps in
+  let* step_locs = check_protos step_locs protos in
+  let* _ = check_nodes step_locs nodes in
+  let* _ = check_channels channels in
   { steps = ordered_steps; protos; nodes; channels } |> ok
 
 let f = order

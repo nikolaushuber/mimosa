@@ -5,4 +5,4 @@ File "cyclic_step.mim", lines 1-6, characters 0-1
 4 |     tmp2 = tmp1;
 5 |     out = in;
 6 | }
-Error: Dependency between symbols: tmp2, tmp1
+Error: Dependency cycle between equations: tmp2, tmp1

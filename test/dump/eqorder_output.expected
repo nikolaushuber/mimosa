@@ -1,2 +1,0 @@
-((step test input output
-   ((tmp2 (-> 4 input)) (tmp1 (- tmp2 2)) (output (* 2 tmp1)))))

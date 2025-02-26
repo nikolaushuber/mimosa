@@ -1,0 +1,7 @@
+File "redefine_node.mim", line 4, characters 5-12
+4 | node my_node implements test () --> () every 100ms
+         ^^^^^^^
+Error: Redefinition of node my_node
+Also defined here:
+3 | node my_node implements test () --> () every 100ms
+         ^^^^^^^

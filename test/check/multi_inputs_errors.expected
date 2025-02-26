@@ -2,7 +2,6 @@ File "multi_inputs.mim", line 1, characters 18-23
 1 | step test (input, input) --> output
                       ^^^^^
 Error: Redefinition of local symbol input
-First defined here:
+Also defined here:
 1 | step test (input, input) --> output
                ^^^^^
-

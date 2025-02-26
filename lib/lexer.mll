@@ -96,7 +96,7 @@ rule tokenize = parse
             loc_end = Lexing.lexeme_end_p lexbuf;
             loc_ghost = false
         } in
-        let kind = Lexer_unknown_character e in
+        let kind = Parser_error (`Unknown_char e) in
         raise ( LexError (kind, loc) )
     }
 
@@ -110,7 +110,7 @@ and read_comment = parse
             loc_end = Lexing.lexeme_end_p lexbuf;
             loc_ghost = false
         } in
-        let kind = Lexer_eof_inside_comment in 
+        let kind = Parser_error (`Eof_in_comment) in 
         raise (LexError (kind, loc))
     }
     | _ { read_comment lexbuf }

@@ -1,9 +1,0 @@
-step test (cond, init, signal, default) --> (out)
-{
-    out = if cond then init -> (pre signal) else default;
-}
-
-step test2 (init, signal) --> (out)
-{
-    out = init -> pre signal;
-}

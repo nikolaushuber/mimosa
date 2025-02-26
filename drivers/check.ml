@@ -3,7 +3,7 @@ open Mimosa
 
 let main file =
   let open Reserr in
-  pp false
+  pp
     (fun _ _ -> ())
     Fmt.stdout
     (Parse.f file >>= Ordering.f >>= Initialisation.f >>= Typecheck.f)

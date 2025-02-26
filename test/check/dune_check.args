@@ -1,4 +1,6 @@
 redefine_step
+redefine_channel
+redefine_node
 multi_inputs
 multi_def
 cyclic_step
@@ -12,3 +14,9 @@ missing_type_in_proto
 nested_pre
 init_func_arg
 init_output
+unknown_step
+chan_no_write
+chan_no_read
+chan_multi_read
+chan_multi_write
+node_input_type

@@ -1,0 +1,7 @@
+File "redefine_channel.mim", line 2, characters 8-9
+2 | channel a : bool
+            ^
+Error: Redefinition of channel a
+Also defined here:
+1 | channel a : int
+            ^

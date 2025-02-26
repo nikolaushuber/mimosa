@@ -1,0 +1,2 @@
+channel a : int
+channel a : bool

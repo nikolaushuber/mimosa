@@ -1,11 +1,8 @@
 type err = Error.t * Location.t
-type warning = Warning.t * Location.t
 type 'a t
 
 val ok : 'a -> 'a t
 val error : err -> 'a t
-val warns : warning list -> unit t
-val warn : warning -> unit t
 val ( let* ) : 'a t -> ('a -> 'b t) -> 'b t
 val ( and* ) : 'a t -> 'b t -> ('a * 'b) t
 val ( >>= ) : 'a t -> ('a -> 'b t) -> 'b t
@@ -32,6 +29,4 @@ val fmap : ('a -> 'b) -> 'a t -> 'b t
 val ( <$> ) : ('a -> 'b) -> 'a t -> 'b t
 val amap : ('a -> 'b) t -> 'a t -> 'b t
 val ( <*> ) : ('a -> 'b) t -> 'a t -> 'b t
-
-val pp :
-  bool -> (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a t -> unit
+val pp : (Format.formatter -> 'a -> unit) -> Format.formatter -> 'a t -> unit

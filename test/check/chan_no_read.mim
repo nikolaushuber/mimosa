@@ -1,0 +1,5 @@
+step random_int () --> (_ : int)
+
+channel chan : int
+
+node random implements random_int () --> (chan) every 100ms

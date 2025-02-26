@@ -1,0 +1,4 @@
+File "unknown_step.mim", line 1, characters 18-22
+1 | node n implements test () --> () every 100ms
+                      ^^^^
+Error: Unknown step test

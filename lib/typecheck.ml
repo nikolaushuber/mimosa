@@ -5,6 +5,7 @@
     - No mutually recursive dependencies between steps
     - Each symbol is only defined once
     - Each output is defined by an equation
+    - Each node implements a step that exists
 *)
 
 open Ordering
@@ -43,7 +44,7 @@ and ty_ident loc env id =
         let t = Scheme.instantiate s state in
         (Subst.empty, t) |> ok
     | None ->
-        let err = Error.Unbound_value name in
+        let err = Error.(Unknown_symbol (`Var, name)) in
         error (err, loc)
   in
   let* s, ty = lookup_id loc env id in
@@ -238,13 +239,8 @@ let rec ty_pattern ?(proto = false) env map p =
     match p.pat_ty with
     | Some t -> ty_core_type map t |> ok
     | None ->
-        if proto then
-          let err = Error.Missing_type_in_proto in
-          let loc = p.pat_loc in
-          error (err, loc)
-        else
-          let n = next_state () in
-          (map, TVar n) |> ok
+        let n = next_state () in
+        (map, TVar n) |> ok
   in
   match p.pat_desc with
   | Pat_any ->
@@ -373,6 +369,37 @@ let ty_step env step =
   (env', Ttree_builder.step name input output def) |> ok
 
 let ty_proto env p =
+  let rec contains_ty_var ty =
+    match ty.type_desc with
+    | Type_bool | Type_float | Type_int -> false
+    | Type_option t -> contains_ty_var t
+    | Type_var _ -> true
+    | Type_tuple ts ->
+        List.fold_left (fun acc t -> acc || contains_ty_var t) false ts
+  in
+  let rec check_pat pat =
+    match pat.pat_desc with
+    | Pat_unit -> ok ()
+    | Pat_any | Pat_var _ ->
+        let* ty =
+          match pat.pat_ty with
+          | Some ty -> ok ty
+          | None ->
+              let loc = pat.pat_loc in
+              let err = Error.Missing_type_in_proto in
+              error (err, loc)
+        in
+        if contains_ty_var ty then
+          let loc = pat.pat_loc in
+          let err = Error.(Unexpected_typevar `Proto) in
+          error (err, loc)
+        else ok ()
+    | Pat_tuple pats ->
+        let* _ = map check_pat pats in
+        ok ()
+  in
+  let* _ = check_pat p.proto_input in
+  let* _ = check_pat p.proto_output in
   let* _, _, ty_in, p_in =
     ty_pattern ~proto:true Env.empty String.Map.empty p.proto_input
   in
@@ -380,16 +407,14 @@ let ty_proto env p =
     ty_pattern ~proto:true Env.empty String.Map.empty p.proto_output
   in
   let name = p.proto_name.txt in
-
   let env' = Env.add env name (Int.Set.empty, TFunc (ty_in, ty_out)) in
-
   (env', Ttree_builder.proto name p_in p_out) |> ok
 
-let ty_channel env l =
+let ty_channel (env, loc_map) l =
   let rec ty_core_type c =
     match c.type_desc with
     | Type_var _ ->
-        let err = Error.Typevar_in_link in
+        let err = Error.(Unexpected_typevar `Channel) in
         let loc = c.type_loc in
         error (err, loc)
     | Type_tuple tys ->
@@ -402,9 +427,10 @@ let ty_channel env l =
     | Type_bool -> TBool |> ok
     | Type_float -> TFloat |> ok
   in
-  let name = l.channel_name in
+  let name = l.channel_name.txt in
   let* ty' = ty_core_type l.channel_type in
   let env' = String.Map.add name ty' env in
+  let loc_map' = String.Map.add name l.channel_name.loc loc_map in
   let* elems =
     map
       (fun e ->
@@ -412,29 +438,82 @@ let ty_channel env l =
         e' |> ok)
       l.channel_elems
   in
-  (env', channel name ty' elems) |> ok
+  ((env', loc_map'), channel name ty' elems) |> ok
 
 let ty_port env p =
   let port_name = p.port_name.txt in
   let port_opt = p.port_opt in
   (env, port port_name port_opt) |> ok
 
-let ty_node env n =
+let ty_node step_env chan_tys (chan_written, chan_read) n =
   let node_name = n.node_name.txt in
   let node_implements = n.node_implements.txt in
+  let aux dir chans ports =
+    fold_left
+      (fun acc port ->
+        match String.Map.find_opt port.port_name.txt acc with
+        | None -> String.Map.add port.port_name.txt port.port_name.loc acc |> ok
+        | Some loc ->
+            let err =
+              Error.(Channel_multiple_use (dir, port.port_name.txt, loc))
+            in
+            error (err, port.port_name.loc))
+      chans ports
+  in
+  let* chan_read' = aux `Read chan_read n.node_inputs in
+  let* chan_written' = aux `Write chan_written n.node_outputs in
+  let aux ports =
+    let tys =
+      List.map
+        (fun port ->
+          let port_ty = String.Map.find port.port_name.txt chan_tys in
+          if port.port_opt then TOption port_ty else port_ty)
+        ports
+    in
+    match tys with
+    | [] -> TUnit
+    | [ x ] -> x
+    | tys -> TTuple tys
+  in
+  let input_ty = aux n.node_inputs in
+  let output_ty = aux n.node_outputs in
+  let intf_ty = TFunc (input_ty, output_ty) in
+  let* _, step_ty, _ =
+    ty_ident n.node_implements.loc step_env node_implements
+  in
+  let* _ = unify ~loc:n.node_implements.loc intf_ty step_ty in
   let* _, node_inputs = fold_left_map ty_port String.Map.empty n.node_inputs in
   let* _, node_outputs =
     fold_left_map ty_port String.Map.empty n.node_outputs
   in
   let node_period = (n.node_period.period_time, n.node_period.period_unit) in
-  (env, node node_name node_implements node_inputs node_outputs node_period)
+  ( (chan_written', chan_read'),
+    node node_name node_implements node_inputs node_outputs node_period )
   |> ok
 
 let ty_pack pack =
   let* env, protos = fold_left_map ty_proto Env.empty pack.protos in
-  let* _, steps = fold_left_map ty_step env pack.steps in
-  let* _, channels = fold_left_map ty_channel String.Map.empty pack.channels in
-  let* _, nodes = fold_left_map ty_node String.Map.empty pack.nodes in
+  let* step_env, steps = fold_left_map ty_step env pack.steps in
+  let* (chan_env, chan_locs), channels =
+    fold_left_map ty_channel (String.Map.empty, String.Map.empty) pack.channels
+  in
+  let* (chan_written', chan_read'), nodes =
+    fold_left_map
+      (ty_node step_env chan_env)
+      (String.Map.empty, String.Map.empty)
+      pack.nodes
+  in
+  let check_unused dir chans =
+    let keys = String.Map.bindings chans |> List.map fst in
+    let unused = List.fold_left (Fun.flip String.Map.remove) chan_locs keys in
+    match String.Map.choose_opt unused with
+    | None -> ok ()
+    | Some (name, loc) ->
+        let err = Error.(Channel_unused (dir, name)) in
+        error (err, loc)
+  in
+  let* _ = check_unused `Write chan_written' in
+  let* _ = check_unused `Read chan_read' in
   let pack = package protos steps channels nodes in
   pack |> ok
 

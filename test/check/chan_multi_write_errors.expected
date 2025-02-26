@@ -1,0 +1,7 @@
+File "chan_multi_write.mim", line 7, characters 39-43
+7 | node rand2 implements rand_int () --> (chan) every 100ms
+                                           ^^^^
+Error: Channel chan is written to multiple times.
+It was also written here:
+6 | node rand1 implements rand_int () --> (chan) every 100ms
+                                           ^^^^

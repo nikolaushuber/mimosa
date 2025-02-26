@@ -1,0 +1,13 @@
+site_name: Mimosa
+nav:
+  - Home: index.md
+  - Getting Started: getting_started.md
+  - Language Definition:
+    - Overview: overview.md
+    - Types: types.md
+    - Steps: steps.md
+    - Channels: channels.md
+    - Nodes: nodes.md
+  - Additional Information:
+    - License: license.md
+theme: readthedocs

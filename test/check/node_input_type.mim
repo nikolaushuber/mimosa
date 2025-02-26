@@ -1,0 +1,7 @@
+step rand_bool () --> (_ : bool)
+step print_int (_ : int) --> ()
+
+channel x : bool
+
+node rand implements rand_bool () --> (x) every 100ms
+node print implements print_int (x) --> () every 100ms

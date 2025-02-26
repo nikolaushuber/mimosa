@@ -1,0 +1,5 @@
+step print (_ : int) --> ()
+
+channel chan : int
+
+node test implements print (chan) --> () every 100ms

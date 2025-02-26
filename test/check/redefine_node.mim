@@ -1,0 +1,4 @@
+step test () --> ()
+
+node my_node implements test () --> () every 100ms
+node my_node implements test () --> () every 100ms

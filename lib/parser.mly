@@ -129,7 +129,7 @@ proto:
     }
 
 channel:
-    | "channel" name = TK_STRING ":" ty = ty elems = init_elems {
+    | "channel" name = with_loc(TK_STRING) ":" ty = ty elems = init_elems {
         channel ~loc:(to_loc $loc) name ty elems
     }
 

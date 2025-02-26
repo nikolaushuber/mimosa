@@ -18,6 +18,36 @@
   (package mimosa))
  (action
   (with-stderr-to
+   redefine_channel_errors
+   (run mimosa check %{dep:redefine_channel.mim}))))
+
+(rule
+ (alias runtest)
+ (package mimosa)
+ (action
+  (progn
+   (diff redefine_channel_errors.expected redefine_channel_errors))))
+
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stderr-to
+   redefine_node_errors
+   (run mimosa check %{dep:redefine_node.mim}))))
+
+(rule
+ (alias runtest)
+ (package mimosa)
+ (action
+  (progn
+   (diff redefine_node_errors.expected redefine_node_errors))))
+
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stderr-to
    multi_inputs_errors
    (run mimosa check %{dep:multi_inputs.mim}))))
 
@@ -207,4 +237,94 @@
  (action
   (progn
    (diff init_output_errors.expected init_output_errors))))
+
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stderr-to
+   unknown_step_errors
+   (run mimosa check %{dep:unknown_step.mim}))))
+
+(rule
+ (alias runtest)
+ (package mimosa)
+ (action
+  (progn
+   (diff unknown_step_errors.expected unknown_step_errors))))
+
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stderr-to
+   chan_no_write_errors
+   (run mimosa check %{dep:chan_no_write.mim}))))
+
+(rule
+ (alias runtest)
+ (package mimosa)
+ (action
+  (progn
+   (diff chan_no_write_errors.expected chan_no_write_errors))))
+
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stderr-to
+   chan_no_read_errors
+   (run mimosa check %{dep:chan_no_read.mim}))))
+
+(rule
+ (alias runtest)
+ (package mimosa)
+ (action
+  (progn
+   (diff chan_no_read_errors.expected chan_no_read_errors))))
+
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stderr-to
+   chan_multi_read_errors
+   (run mimosa check %{dep:chan_multi_read.mim}))))
+
+(rule
+ (alias runtest)
+ (package mimosa)
+ (action
+  (progn
+   (diff chan_multi_read_errors.expected chan_multi_read_errors))))
+
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stderr-to
+   chan_multi_write_errors
+   (run mimosa check %{dep:chan_multi_write.mim}))))
+
+(rule
+ (alias runtest)
+ (package mimosa)
+ (action
+  (progn
+   (diff chan_multi_write_errors.expected chan_multi_write_errors))))
+
+(rule
+ (deps
+  (package mimosa))
+ (action
+  (with-stderr-to
+   node_input_type_errors
+   (run mimosa check %{dep:node_input_type.mim}))))
+
+(rule
+ (alias runtest)
+ (package mimosa)
+ (action
+  (progn
+   (diff node_input_type_errors.expected node_input_type_errors))))
 

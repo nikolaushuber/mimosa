@@ -1,0 +1,7 @@
+File "chan_multi_read.mim", line 8, characters 34-38
+8 | node print2 implements print_int (chan) --> () every 100ms
+                                      ^^^^
+Error: Channel chan is read from multiple times.
+It was also read here:
+7 | node print1 implements print_int (chan) --> () every 100ms
+                                      ^^^^

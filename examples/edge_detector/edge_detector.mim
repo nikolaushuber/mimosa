@@ -1,6 +1,6 @@
 step edge (in : bool) --> (out : bool?)
 {
-    pre_in = false -> pre in;
+    pre_in = in -> pre in;
     out = if !pre_in && in then Some true
           else if pre_in && !in then Some false
           else None;

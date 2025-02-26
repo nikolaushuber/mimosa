@@ -1,0 +1,8 @@
+step rand_int () --> (_ : int)
+step print_int (_ : int) --> ()
+
+channel chan : int
+
+node rand implements rand_int () --> (chan) every 100ms
+node print1 implements print_int (chan) --> () every 100ms
+node print2 implements print_int (chan) --> () every 100ms

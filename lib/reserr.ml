@@ -1,29 +1,16 @@
 type err = Error.t * Location.t
-type warning = Warning.t * Location.t
-type 'a t = ('a, err list) result * warning list
+type 'a t = ('a, err list) result
 
-let ok x = (Result.ok x, [])
-let error x = (Result.error [ x ], [])
-let warns xs = (Result.ok (), xs)
-let warn x = warns [ x ]
-
-let ( let* ) x f =
-  match x with
-  | Ok v, w1 ->
-      let r, w2 = f v in
-      (r, w1 @ w2)
-  | (Error _, _) as x -> x
-
+let ok = Result.ok
+let error x = Result.error [ x ]
+let ( let* ) = Result.bind
 let ( >>= ) = ( let* )
 
-let ( and* ) (x, wx) (y, wy) =
-  let r =
-    match (x, y) with
-    | Error e1, Error e2 -> Error (e1 @ e2)
-    | Error e, _ | _, Error e -> Error e
-    | Ok x, Ok y -> Ok (x, y)
-  in
-  (r, wx @ wy)
+let ( and* ) x y =
+  match (x, y) with
+  | Error e1, Error e2 -> Error (e1 @ e2)
+  | Error e, _ | _, Error e -> Error e
+  | Ok x, Ok y -> Ok (x, y)
 
 let fmap f r =
   let* r = r in
@@ -40,19 +27,15 @@ let ( <*> ) = amap
 let sequence r =
   let rec aux = function
     | [] -> ok []
-    | ((Ok _, _) as x) :: xs ->
+    | (Ok _ as x) :: xs ->
         let* y = x and* ys = aux xs in
         ok (y :: ys)
-    | ((Error _, _) as x) :: _ -> x
+    | (Error _ as x) :: _ -> x
   in
   aux r
 
 let of_option ~default = Option.fold ~none:(error default) ~some:ok
-
-let to_option = function
-  | Ok x, _ -> Some x
-  | _ -> None
-
+let to_option = Result.to_option
 let map f l = List.map f l |> sequence
 let concat_map f l = fmap List.concat (map f l)
 
@@ -103,24 +86,14 @@ let pp_err ppf (err, loc) =
   let open Fmt in
   pf ppf "%a@[%a: %a@]" pp_loc loc (styled `Bold string) "Error" Error.pp err
 
-let pp_warn _ _ = ()
-
-let pp quiet pp_ok ppf =
+let pp pp_ok ppf =
   let open Fmt in
   function
-  | Ok x, w -> (
-      pp_ok ppf x;
-      if not quiet then
-        match w with
-        | [] -> ()
-        | ws -> pf stderr "%a" (list Warning.pp) ws)
-  | Error es, w -> pf stderr "%a@;%a" (list pp_err) es (list pp_warn) w
+  | Ok x -> pp_ok ppf x
+  | Error es -> (list pp_err) stderr es
 
-let unpack (res : 'a t) : 'a =
-  match res with
-  | Ok x, _ ->
-      pp false (fun _ _ -> ()) stderr res;
-      x
-  | _ ->
-      pp false (fun _ _ -> ()) stderr res;
+let unpack = function
+  | Ok x -> x
+  | err ->
+      pp (fun _ _ -> ()) stderr err;
       exit 1

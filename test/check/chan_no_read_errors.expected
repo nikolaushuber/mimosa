@@ -1,0 +1,4 @@
+File "chan_no_read.mim", line 3, characters 8-12
+3 | channel chan : int
+            ^^^^
+Error: Channel chan is never read from

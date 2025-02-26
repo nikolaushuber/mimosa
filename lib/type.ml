@@ -76,30 +76,35 @@ end = struct
     in
     aux Subst.empty t
 
-  let rec unify ?(loc = Location.none) t1 t2 =
+  let unify ?(loc = Location.none) t1 t2 =
+    let exception Type_error in
     let open Reserr in
-    match (t1, t2) with
-    | TFunc (l, r), TFunc (l', r') ->
-        let* s1 = unify ~loc l l' in
-        let* s2 = unify ~loc (Type.apply s1 r) (Type.apply s1 r') in
-        Subst.compose s2 s1 |> ok
-    | TVar u, t | t, TVar u -> var_bind u t |> ok
-    | TInt, TInt -> Int.Map.empty |> ok
-    | TBool, TBool -> Int.Map.empty |> ok
-    | TUnit, TUnit -> Int.Map.empty |> ok
-    | TFloat, TFloat -> Int.Map.empty |> ok
-    | TOption t1, TOption t2 -> unify ~loc t1 t2
-    | TTuple ts1, TTuple ts2 ->
-        fold_left
-          (fun s (t1, t2) ->
-            let* s1 = unify ~loc (Type.apply s t1) (Type.apply s t2) in
-            Subst.compose s1 s |> ok)
-          Subst.empty (List.combine ts1 ts2)
-    | _ ->
-        let t1_str = Format.asprintf "%a" Type.pp t1 in
-        let t2_str = Format.asprintf "%a" Type.pp t2 in
-        let err = Error.Unification (t1_str, t2_str) in
-        error (err, loc)
+    let rec aux t1 t2 =
+      match (t1, t2) with
+      | TFunc (l, r), TFunc (l', r') ->
+          let* s1 = aux l l' in
+          let* s2 = aux (Type.apply s1 r) (Type.apply s1 r') in
+          Subst.compose s2 s1 |> ok
+      | TVar u, t | t, TVar u -> var_bind u t |> ok
+      | TInt, TInt -> Int.Map.empty |> ok
+      | TBool, TBool -> Int.Map.empty |> ok
+      | TUnit, TUnit -> Int.Map.empty |> ok
+      | TFloat, TFloat -> Int.Map.empty |> ok
+      | TOption t1, TOption t2 -> aux t1 t2
+      | TTuple ts1, TTuple ts2 ->
+          fold_left
+            (fun s (t1, t2) ->
+              let* s1 = aux (Type.apply s t1) (Type.apply s t2) in
+              Subst.compose s1 s |> ok)
+            Subst.empty (List.combine ts1 ts2)
+      | _ -> raise Type_error
+    in
+    try aux t1 t2
+    with Type_error ->
+      let t1_str = Format.asprintf "%a" Type.pp t1 in
+      let t2_str = Format.asprintf "%a" Type.pp t2 in
+      let err = Error.Unification (t1_str, t2_str) in
+      error (err, loc)
 
   let rec pp ppf =
     let open Fmt in

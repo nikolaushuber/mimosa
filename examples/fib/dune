@@ -3,7 +3,7 @@
  (deps
   (package mimosa))
  (action
-  (run mimosa dump sim %{dep:fib.mim} -o %{target})))
+  (run mimosa sim %{dep:fib.mim} -o %{target})))
 
 (library
  (name fib)

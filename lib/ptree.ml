@@ -109,7 +109,7 @@ type node = {
 }
 
 type channel = {
-  channel_name : string;
+  channel_name : string loc;
   channel_type : core_type;
   channel_elems : expression list;
   channel_loc : Location.t;
