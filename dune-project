@@ -28,7 +28,9 @@
   fmt
   pp_loc
   tsort
-  sexplib)
+  sexplib
+  ppxlib
+  cmdliner)
  (tags
   (topics "to describe" your project)))
 

@@ -18,6 +18,8 @@ depends: [
   "pp_loc"
   "tsort"
   "sexplib"
+  "ppxlib"
+  "cmdliner"
   "odoc" {with-doc}
 ]
 build: [
