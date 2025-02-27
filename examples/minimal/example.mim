@@ -1,0 +1,14 @@
+step random_bool () --> (_ : bool)
+step print_bool (_ : bool) --> ()
+
+step invert (in : bool) --> (out : bool)
+{
+    out = !in;
+}
+
+channel a : bool
+channel b : bool
+
+node rand implements random_bool () --> (a) every 50ms
+node invert implements invert (a) --> (b) every 50ms
+node print implements print_bool (b) --> () every 50ms

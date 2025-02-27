@@ -13,13 +13,15 @@ depends: [
   "ocaml"
   "dune" {>= "3.16"}
   "menhir"
-  "cmdliner"
   "fmt"
   "pp_loc"
   "tsort"
   "sexplib"
   "ppxlib"
   "cmdliner"
+  "minttea"
+  "leaves"
+  "spices"
   "odoc" {with-doc}
 ]
 build: [

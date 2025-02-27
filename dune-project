@@ -24,13 +24,15 @@
   ocaml
   dune
   menhir
-  cmdliner
   fmt
   pp_loc
   tsort
   sexplib
   ppxlib
-  cmdliner)
+  cmdliner
+  minttea
+  leaves
+  spices)
  (tags
   (topics "to describe" your project)))
 

@@ -1,0 +1,16 @@
+(rule
+ (target example.ml)
+ (deps
+  (package mimosa))
+ (action
+  (run mimosa sim %{dep:example.mim} -o %{target})))
+
+(library
+ (name example)
+ (modules example)
+ (libraries mimosa))
+
+(executable
+ (name minimal_example)
+ (modules minimal_example)
+ (libraries mimosa example))

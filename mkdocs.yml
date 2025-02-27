@@ -1,7 +1,8 @@
 site_name: Mimosa
 nav:
   - Home: index.md
-  - Getting Started: getting_started.md
+  - Installation: installation.md
+  - Guided tour: simple_example.md
   - Language Definition:
     - Overview: overview.md
     - Types: types.md

@@ -1,17 +1,5 @@
-# Welcome to MkDocs
+# Mimosa Language Documentation
 
-For full documentation visit [mkdocs.org](https://www.mkdocs.org).
+Mimosa is a new programming language specifically targetting embedded (control) applications. It builds upon the [MIMOS model](https://doi.org/10.1007/978-3-031-08143-9_2) of computation, therefore it describes a program as a collection of computational components (called *nodes*), which communicate through FIFO buffers (called *channels*).
 
-## Commands
-
-* `mkdocs new [dir-name]` - Create a new project.
-* `mkdocs serve` - Start the live-reloading docs server.
-* `mkdocs build` - Build the documentation site.
-* `mkdocs -h` - Print help message and exit.
-
-## Project layout
-
-    mkdocs.yml    # The configuration file.
-    docs/
-        index.md  # The documentation homepage.
-        ...       # Other markdown pages, images and other files.
+This documentations explains the syntax of the language, and shows how a MIMOS program can be simulated.

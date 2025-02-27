@@ -92,6 +92,36 @@ Tuples are build inductively by using `,` on subexpressions:
 1, x, 5.0
 ```
 
+### Arithematic, logic, and comparison operators
+
+Mimosa offers the standard set of arithmetic and logic operators, which are commong in other programming languages as well. Similar to OCaml, certain operators exist in two flavours, one for integers, and one for floats:
+
+- `+`, `-`, `*`, `/`: integer arithmetic
+- `+.`, `-.`, `*.`, `/.`: floating point arithmetic
+
+- `&&`: and
+- `||`: or
+- `=>`: implies
+- `!`: not
+
+- `<`, `<=`, `>=`, `>`: integer comparison
+- `<.`, `<=.`, `>=.`, `>.`: floating point comparison
+
+- `==`, `!=`: polymorphic comparison
+
+The following table lists the precedence level of all operators classes from the lowest to the highest precedence.
+
+| Operator | Associativity |
+| --- | --- |
+| `=>` | left |
+| `||` | left |
+| `&&` | left |
+| `<` `<=` `>=` `>` `<.` `<=.` `>=.` `>.` `==` `!=` | left |
+| `!` | right |
+| `+` `-` `+.` `-.` | left |
+| `*` `/` `*.` `/.` | left |
+| `?` `-` `-.` (unary negate) | right |
+
 ### Memory operators
 
 As each expression semantically representes a (possible inifinite) sequence of
@@ -111,6 +141,8 @@ initial element, however, it does not evaluate the second argument.
 
 Assuming the variable `x` represents the sequence `1, 2, 3, 4, ...`, then 
 `0 -> x` representes `0, 2, 3, 4, ...` while `0 fby x` represents `0, 1, 2, 3, 4, ...`.
+
+Both `->` and `fby` are right associative, and have a lower precedence than any of the arithmetic, logic, and comparison operators. `pre` is right associative and has the highest precedence of any operator in Mimosa.
 
 ### Step Application
 
