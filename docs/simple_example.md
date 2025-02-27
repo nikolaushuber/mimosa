@@ -4,7 +4,8 @@ This guide walks through a very simple example of a Mimosa program, and shows ho
 
 ## Example program
 
-![Simple example](images/random_bool.png)
+![Simple example](images/random_bool.png#only-light)
+![Simple example](images/random_bool_light.png#only-dark)
 
 As a first example, we will implement the program above. It consists of three *nodes*, which are called **rand**, **invert**, and **print**.
 
@@ -21,7 +22,7 @@ step random_bool () --> (_ : bool)
 step print_bool (_ : bool) --> ()
 ```
 
-A step definition starts with the `step` keyword, followed by the name of the step (which must start with a lower-case letter), and then the signature, which is comprised of an input and output [pattern](language.md#pattern) separated by `-->`.
+A step definition starts with the `step` keyword, followed by the name of the step (which must start with a lower-case letter), and then the signature, which is comprised of an input and output [pattern](steps.md#patterns) separated by `-->`.
 
 We could have named the formal parameters inside the input and ouput definitions (e.g., `() --> (out : bool)`), however, for step prototypes we are only interested in their type signature, therefore, we do not need to invent names for the parameters (and can instead use `_` as the name).
 
@@ -34,7 +35,7 @@ step invert (in : bool) --> (out : bool)
 }
 ```
 
-Here, the step signature is followed by a set of equation (or in this case just one equation), which defines the output `out` as the inverted input `in`. For more information on the available operators please refer to the [language definition](steps.md#expressions]).
+Here, the step signature is followed by a set of equation (or in this case just one equation), which defines the output `out` as the inverted input `in`. For more information on the available operators please refer to the [language definition](steps.md#expressions).
 
 Next, we can define the two channels:
 
@@ -121,7 +122,7 @@ mimosa sim example.mim
 
 We get the following (slightly simplified) output:
 
-```
+```ocaml
 open Mimosa.Sim_ast
 
 module type Extern = sig
@@ -138,7 +139,7 @@ This means, that the code produced by `mimosa sim` can be used both for defining
 
 For a first try, we can implement the module in the following way:
 
-```
+```ocaml
 module E : Extern = struct
   let random_bool = Random.bool
   let print_bool b = print_string (if b then "t " else "f ")

@@ -1,4 +1,4 @@
-## Channels
+# Channels
 
 A channel represents a FIFO buffer, and is defined by the keyword `channel`
 followed by the name, the type of values it stores, and possibly a the set of

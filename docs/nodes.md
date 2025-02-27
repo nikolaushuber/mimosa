@@ -1,4 +1,4 @@
-## Nodes
+# Nodes
 
 A node is an instantiation of a step as a process, which communicates through
 channels with other nodes. It defines its *interface* by referring to the
