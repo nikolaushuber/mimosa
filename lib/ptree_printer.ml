@@ -127,8 +127,31 @@ let sexp_of_proto p =
   let output' = sexp_of_pattern p.proto_output in
   List [ Atom "step"; name; input'; output' ]
 
-let sexp_of_node _ = List []
-let sexp_of_channel _ = List []
+let sexp_of_time_unit = function
+  | Ms -> Atom "ms"
+
+let sexp_of_port p =
+  List [ Atom p.port_name.txt; Atom (string_of_bool p.port_opt) ]
+
+let sexp_of_node n =
+  let name = Atom n.node_name.txt in
+  let input = List (List.map sexp_of_port n.node_inputs) in
+  let output = List (List.map sexp_of_port n.node_outputs) in
+  let implements = Atom n.node_implements.txt in
+  let period =
+    List
+      [
+        Atom (string_of_int n.node_period.period_time);
+        sexp_of_time_unit n.node_period.period_unit;
+      ]
+  in
+  List [ Atom "node"; name; input; output; implements; period ]
+
+let sexp_of_channel c =
+  let name = Atom c.channel_name.txt in
+  let ty = sexp_of_core_type c.channel_type in
+  let elems = List (List.map sexp_of_expression c.channel_elems) in
+  List [ Atom "channel"; name; ty; elems ]
 
 let rec sexp_of_item item = sexp_of_item_desc item.item_desc
 

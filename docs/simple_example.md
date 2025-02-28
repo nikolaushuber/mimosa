@@ -56,6 +56,9 @@ node print implements print_bool (b) --> () every 50ms
 
 Each node has a name, a step that it implements, an *interface definition*, and a *period*. Node names are in a different namespace than steps, therefore a node can have the same name as a step (like here for `invert`). The interface refers to the channels we defined before. For each node, the interface type must be compatible with the type of the step it implements.
 
+!!! note
+    Each defined channel needs to be connected once to a node input and once to a node output. Unconnected channels are flagged by the compiler.
+
 The full program therefore looks like this:
 
 ```text
@@ -74,6 +77,9 @@ node rand implements random_bool () --> (a) every 50ms
 node invert implements invert (a) --> (b) every 50ms
 node print implements print_bool (b) --> () every 50ms
 ```
+
+!!! note
+    The order of top-level definitions is not relevant, the compiler will order the items automatically according to their dependencies. This also means, that no two definitions of the same class (i.e., steps, nodes, or channels) can have the same name.
 
 We can check if the program is syntactically correct, and if it type checks, by using the `mimosa check` command. If we save the program above into a file `example.mim` we can then run
 
