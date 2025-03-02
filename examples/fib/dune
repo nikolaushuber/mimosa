@@ -11,11 +11,6 @@
  (libraries mimosa))
 
 (executable
- (name fib_test)
- (modules fib_test)
+ (name fib_sim)
+ (modules fib_sim)
  (libraries mimosa fib))
-
-(rule
- (alias runtest)
- (action
-  (run %{dep:fib_test.exe})))

@@ -5,11 +5,8 @@
 
 (generate_opam_files true)
 
-(source
- (github nikolaushuber/mimosa))
-
+(source (github nikolaushuber/mimosa))
 (authors "Nikolaus Huber")
-
 (maintainers "Nikolaus Huber")
 
 (license MIT)
@@ -19,7 +16,7 @@
 (package
  (name mimosa)
  (synopsis "The Mimosa tool")
- (description "A compilers and simulators for the Mimosa language")
+ (description "Compiler and simulator for the Mimosa language")
  (depends
   ocaml
   dune
