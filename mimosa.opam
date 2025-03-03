@@ -19,7 +19,6 @@ depends: [
   "ppxlib"
   "cmdliner"
   "minttea"
-  "spices"
   "odoc" {with-doc}
 ]
 build: [

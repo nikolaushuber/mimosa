@@ -27,5 +27,4 @@
   sexplib
   ppxlib
   cmdliner
-  minttea
-  spices))
+  minttea))
