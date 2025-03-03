@@ -9,5 +9,5 @@ let main file =
     (Parse.f file >>= Ordering.f >>= Initialisation.f >>= Typecheck.f)
 
 let term = Term.(const main $ Args.file)
-let info = Cmd.info "check" ~doc:"Check a given set of files."
+let info = Cmd.info "check" ~doc:"Check a given file for syntax and type correctness."
 let cmd = Cmd.v info term
