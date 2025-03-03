@@ -1,7 +1,7 @@
 open Edge_detector
 open Mimosa.Sim
 
-let input_signal = [ true; false; false; true; true; true; false; ]
+let input_signal = [ true; false; false; true; true; true; false ]
 
 let rec get_edges = function
   | true :: false :: xs -> false :: get_edges (false :: xs)

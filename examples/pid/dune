@@ -13,4 +13,4 @@
 (executable
  (name pid_sim)
  (modules pid_sim)
- (libraries mimosa pid minttea spices fmt))
+ (libraries mimosa pid minttea fmt))
