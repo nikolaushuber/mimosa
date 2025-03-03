@@ -11,11 +11,11 @@ As a first example, we will implement the program above. It consists of three *n
 
 Node **rand** creates random Booleans, node **invert** inverts them, and node **print** will print them. The nodes communicate through the channels **a** and **b**, which are both FIFO buffers holding Boolean values.
 
-Each node will try to execute periodically, in our example all nodes have the same period of *100ms*. If a node does not have input available (i.e., the channel it reads from is empty), then it will stay idle until its next release.
+Each node will try to execute periodically, in our example all nodes have the same period of *50ms*. If a node does not have input available (i.e., the channel it reads from is empty), then it will stay idle until its next release.
 
 Nodes are similar to *threads* or *tasks* in (real-time) operating systems. Each node implements a *step*, which is similar to a function in other programming languages. We will start by defining the steps for our example program.
 
-We will start by defining two *step prototypes*, i.e., steps for which we only define the name and signature, but will leave the implementation to be defined externally.
+First, we define two *step prototypes*, i.e., steps for which we only define the name and type signature, but will leave the implementation to be defined externally.
 
 ```text
 step random_bool () --> (_ : bool)
@@ -26,7 +26,7 @@ A step definition starts with the `step` keyword, followed by the name of the st
 
 We could have named the formal parameters inside the input and ouput definitions (e.g., `() --> (out : bool)`), however, for step prototypes we are only interested in their type signature, therefore, we do not need to invent names for the parameters (and can instead use `_` as the name).
 
-The only step we will implement is the **invert** step:
+The only step we will implement fully in Mimosa is the **invert** step:
 
 ```text
 step invert (in : bool) --> (out : bool)
@@ -35,7 +35,7 @@ step invert (in : bool) --> (out : bool)
 }
 ```
 
-Here, the step signature is followed by a set of equation (or in this case just one equation), which defines the output `out` as the inverted input `in`. For more information on the available operators please refer to the [language definition](steps.md#expressions).
+Here, the step signature is followed by a set of equations (or in this case just one equation), which defines the output `out` as the inverted input `in`. For more information on the available operators please refer to the [language definition](steps.md#expressions).
 
 Next, we can define the two channels:
 
@@ -116,7 +116,7 @@ With that, we can change the **print** node accordingly:
 node print implements print_opt_bool (b?) --> () every 10ms
 ```
 
-An input port can be marked with `?` to declare it optional. Whenever the respective node tries to execute, it will look into the input buffer, and if there is a value `v` inside it wrap it inside an optional value (i.e., `Some v`) before executing the implemented step with the wrapped input. Analogously, if the channel is empty, the step function will be executed with `None` as input. Mind the difference in types between the channel `b` (i.e., `bool`) and the input of the step `print_opt_bool` (i.e., `bool?`).
+An input port can be marked with `?` to declare it optional. Whenever the respective node tries to execute, it will look into the input channel, and if there is a value `v` inside it wrap it inside an optional value (i.e., `Some v`) before executing the implemented step with the wrapped input. Analogously, if the channel is empty, the step function will be executed with `None` as input. Mind the difference in types between the channel `b` (i.e., `bool`) and the input of the step `print_opt_bool` (i.e., `bool?`).
 
 ## Simulation
 
@@ -160,6 +160,6 @@ let _ =
     print_newline ()
 ```
 
-This implements the external functions through functions from the OCaml standard library. It then instantiates the functor with `Simulation` functor with these functions, and finally create a simulation run `sim` by calling `Simulation.init ()` and executing it for *400ms*. When the above simulation is run, 6 random Booleans should be printed to the terminal (it takes *100ms*  for the first value to reach the print node).
+This implements the external functions through functions from the OCaml standard library. We can then instantiate the `Simulation` functor with these functions, and finally create a simulation run `sim` by calling `Simulation.init ()` and executing it for *400ms*. When the above simulation is run, 6 random Booleans should be printed to the terminal (it takes *100ms*  for the first value to reach the print node).
 
-For details on how to run the above code, please refer to the `/examples` directory of the Mimosa repository. The examples also show, how to setup the simulation and test runs automatically with the OCaml build tool [dune](https://dune.build).
+This example is also implemented in the project repository under `/examples/minimal`. For details on how to run the above code, please refer to that  directory (in particular to the README).
