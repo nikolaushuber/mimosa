@@ -1,6 +1,6 @@
 step recv_cmd () --> (_ : float?)
-step set_level (_ : float) --> ()
-step get_level () --> (_ : float)
+step actuate (_ : float) --> ()
+step sense () --> (_ : float)
 
 step controller (cmd, level) --> power
 {
@@ -22,6 +22,6 @@ channel power : float
 channel level : float = { 0.0 }
 
 node cmd implements recv_cmd () --> (cmd?) every 500ms
-node sensor implements get_level () --> (level) every 100ms
+node sensor implements sense () --> (level) every 100ms
 node control implements controller (cmd?, level) --> (power) every 100ms
-node actuator implements set_level (power) --> () every 100ms
+node actuator implements actuate (power) --> () every 100ms

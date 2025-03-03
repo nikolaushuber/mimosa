@@ -28,5 +28,4 @@
   ppxlib
   cmdliner
   minttea
-  leaves
   spices))

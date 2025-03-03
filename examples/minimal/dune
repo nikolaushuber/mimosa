@@ -11,6 +11,6 @@
  (libraries mimosa))
 
 (executable
- (name minimal_example)
- (modules minimal_example)
+ (name minimal_sim)
+ (modules minimal_sim)
  (libraries mimosa example))

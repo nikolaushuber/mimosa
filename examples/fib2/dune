@@ -11,11 +11,6 @@
  (libraries mimosa))
 
 (executable
- (name fib2_test)
- (modules fib2_test)
+ (name fib2_sim)
+ (modules fib2_sim)
  (libraries mimosa fib2))
-
-(rule
- (alias runtest)
- (action
-  (run %{dep:fib2_test.exe})))

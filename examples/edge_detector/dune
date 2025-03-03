@@ -1,0 +1,21 @@
+(rule
+ (target edge_detector.ml)
+ (deps
+  (package mimosa))
+ (action
+  (run mimosa sim %{dep:edge_detector.mim} -o %{target})))
+
+(library
+ (name edge_detector)
+ (modules edge_detector)
+ (libraries mimosa))
+
+(executable
+ (name edge_detector_test)
+ (modules edge_detector_test)
+ (libraries mimosa edge_detector))
+
+(rule
+ (alias runtest)
+ (action
+  (run %{dep:edge_detector_test.exe})))

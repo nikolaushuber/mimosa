@@ -153,7 +153,7 @@ and ty_tuple env es =
       (Subst.empty, [], [], env) es
   in
   let tys = List.rev_map (apply s) tys in
-  let e' = etuple es' in
+  let e' = etuple (List.rev es') in
   (s, TTuple tys, e') |> ok
 
 and ty_ite env c t e =

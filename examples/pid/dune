@@ -11,6 +11,6 @@
  (libraries mimosa))
 
 (executable
- (name pid_example)
- (modules pid_example)
- (libraries mimosa pid minttea spices leaves fmt))
+ (name pid_sim)
+ (modules pid_sim)
+ (libraries mimosa pid minttea spices fmt))

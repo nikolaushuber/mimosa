@@ -8,8 +8,10 @@ end
 
 module Simulation = Simulation (E)
 
+let sim_time_ms = try Sys.argv.(1) |> int_of_string with _ -> 1000
+
 let _ =
   Random.self_init ();
   let sim = Simulation.init () in
-  exec sim 400;
+  exec sim sim_time_ms;
   print_newline ()

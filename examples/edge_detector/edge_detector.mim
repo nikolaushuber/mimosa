@@ -1,3 +1,6 @@
+step poll () --> (_ : bool)
+step print_bool (_ : bool) --> ()
+
 step edge (in : bool) --> (out : bool?)
 {
     pre_in = in -> pre in;
@@ -9,4 +12,6 @@ step edge (in : bool) --> (out : bool?)
 channel a : bool
 channel b : bool
 
+node sensor implements poll () --> (a) every 100ms
 node edge_detect implements edge (a) --> (b?) every 100ms
+node print implements print_bool (b) --> () every 100ms
