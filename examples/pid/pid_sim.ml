@@ -1,10 +1,10 @@
 open Pid
 open Mimosa.Sim
 
-let goal = 4.5
 let curr_level = ref 0.0
 let cmd_queue = Queue.create ()
-let _ = Queue.push goal cmd_queue
+let target = try float_of_string Sys.argv.(1) with _ -> 4.5
+let _ = Queue.push target cmd_queue
 
 module E : Extern = struct
   let recv_cmd () = Queue.take_opt cmd_queue
@@ -32,7 +32,7 @@ let update evt model =
 
 let view _ =
   let open Fmt in
-  str "Level: %.3f\nGoal: %.3f\n%s" !curr_level goal
+  str "Level: %.3f\nGoal: %.3f\n%s" !curr_level target
     "Press ESC to end simulation"
 
 let _ =

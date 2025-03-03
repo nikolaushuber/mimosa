@@ -21,7 +21,7 @@ cd mimosa
 
 ### Setup OCaml
 
-Mimosa is implemented in OCaml, therefore, an OCaml development environment is needed (including [opam](https://opam.ocaml.org), [dune](https://dune.build), and a recent OCaml compiler). There are various ways of installing OCaml, please refer to the official [documentation](https://www.ocaml.org).
+Mimosa is implemented in OCaml, therefore, an OCaml development environment is needed (including [opam](https://opam.ocaml.org), [dune](https://dune.build), and a recent OCaml compiler). There are various ways of installing OCaml, please refer to the official [documentation](https://www.ocaml.org). Mimosa has only been tested with OCaml versions > 5.0, however, it should run with older versions as well.
 
 It is also possible to use a docker image, which already comes with an OCaml development environment installed. If you want to install Mimosa without docker please jump to [the next section](#install-mimosa).
 
